@@ -27,7 +27,7 @@ export default function RegisterPage() {
       // Assuming backend has /api/auth/register endpoint (verify this)
       const res = await axios.post(`${API_URL}/api/auth/register`, {
         ...formData,
-        role: 'USER' // Default role
+        role: 'CREATOR' // Default role for new registrations
       });
 
       // Auto login or redirect to login? Let's redirect to login for now.

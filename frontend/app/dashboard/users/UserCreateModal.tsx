@@ -16,7 +16,7 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
     username: '',
     email: '',
     password: '',
-    role: 'USER',
+    role: 'CREATOR',
     full_name: '',
     phone_number: '',
     nic: '',
@@ -48,7 +48,7 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
         username: '',
         email: '',
         password: '',
-        role: 'USER',
+        role: 'CREATOR',
         full_name: '',
         phone_number: '',
         nic: '',
@@ -138,7 +138,6 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white text-slate-600 cursor-pointer"
                   >
-                    <option value="USER">User</option>
                     <option value="CREATOR">Creator</option>
                     <option value="MANAGER">Manager</option>
                     <option value="ADMIN">Admin</option>

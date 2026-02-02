@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Clock, Tag, User } from 'lucide-react';
+import { API_URL } from '@/config/api';
 
 function SinglePostContent() {
   const router = useRouter();
@@ -27,7 +28,7 @@ function SinglePostContent() {
     const fetchPost = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/posts/${id}`, {
+        const res = await axios.get(`${API_URL}/api/posts/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPost(res.data);
@@ -93,12 +94,12 @@ function SinglePostContent() {
             {/* Media Column */}
             <div className={`lg:col-span-3 bg-black flex items-center justify-center p-0 relative group`}>
               {/* Blurred Backdrop */}
-              <div className="absolute inset-0 opacity-20 bg-cover bg-center blur-2xl z-0" style={{ backgroundImage: `url(http://localhost:5000${post.media_path})` }}></div>
+              <div className="absolute inset-0 opacity-20 bg-cover bg-center blur-2xl z-0" style={{ backgroundImage: `url(${API_URL}${post.media_path})` }}></div>
 
               {isVideo ? (
-                <video src={`http://localhost:5000${post.media_path}`} controls className="w-full h-full max-h-[600px] object-contain relative z-10" />
+                <video src={`${API_URL}${post.media_path}`} controls className="w-full h-full max-h-[600px] object-contain relative z-10" />
               ) : (
-                <img src={`http://localhost:5000${post.media_path}`} alt={post.title} className="w-full h-full max-h-[600px] object-contain relative z-10" />
+                <img src={`${API_URL}${post.media_path}`} alt={post.title} className="w-full h-full max-h-[600px] object-contain relative z-10" />
               )}
             </div>
 

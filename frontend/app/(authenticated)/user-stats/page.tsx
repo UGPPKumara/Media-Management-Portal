@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, FileText, CheckCircle, XCircle, Clock, Layout } from 'lucide-react';
+import { API_URL } from '@/config/api';
 
 function UserStatsContent() {
   const router = useRouter();
@@ -21,7 +22,7 @@ function UserStatsContent() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        let url = `http://localhost:5000/api/posts/user-stats/${userId}`;
+        let url = `${API_URL}/api/posts/user-stats/${userId}`;
         if (dateRange.start && dateRange.end) {
           url += `?startDate=${dateRange.start}&endDate=${dateRange.end}`;
         }

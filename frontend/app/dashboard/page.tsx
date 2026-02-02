@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import { API_URL } from '@/config/api';
 import {
   TrendingUp,
   Users,
@@ -49,17 +50,17 @@ export default function DashboardOverview() {
     try {
       // Load global stats for Admin/Manager
       if (currentUser.role === 'ADMIN' || currentUser.role === 'MANAGER') {
-        const statsRes = await axios.get('http://localhost:5000/api/posts/stats', {
+        const statsRes = await axios.get(`${API_URL}/api/posts/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStats(statsRes.data);
 
-        const activityRes = await axios.get('http://localhost:5000/api/posts/activity', {
+        const activityRes = await axios.get(`${API_URL}/api/posts/activity`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setActivity(activityRes.data);
 
-        const storageRes = await axios.get('http://localhost:5000/api/posts/storage', {
+        const storageRes = await axios.get(`${API_URL}/api/posts/storage`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStorage(storageRes.data);
@@ -67,13 +68,13 @@ export default function DashboardOverview() {
 
       // Load user stats for Creator
       if (currentUser.role === 'CREATOR') {
-        const userStatsRes = await axios.get('http://localhost:5000/api/posts/user-stats', {
+        const userStatsRes = await axios.get(`${API_URL}/api/posts/user-stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUserStats(userStatsRes.data);
 
         // Fetch Recent Posts for Creator
-        const postsRes = await axios.get(`http://localhost:5000/api/users/${currentUser.id}/posts`, {
+        const postsRes = await axios.get(`${API_URL}/api/users/${currentUser.id}/posts`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

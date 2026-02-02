@@ -4,6 +4,7 @@ import axios from 'axios';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import ConfirmModal from '@/components/ConfirmModal';
+import { API_URL } from '@/config/api';
 import {
   LayoutDashboard,
   Users,
@@ -36,7 +37,7 @@ export default function Sidebar() {
     try {
       const token = localStorage.getItem('token');
       // Auth might not be needed for public settings, but let's send it if we have it
-      const res = await axios.get('http://localhost:5000/api/settings', {
+      const res = await axios.get(`${API_URL}/api/settings`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       // Handle the case where the API returns null/empty if no settings exist, though controller defaults it.
@@ -61,12 +62,12 @@ export default function Sidebar() {
   if (!user) return null;
 
   const links = [
-    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'CREATOR', 'USER'] },
+    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
     { name: 'Users', href: '/dashboard/users', icon: Users, roles: ['ADMIN'] },
     { name: 'Approvals', href: '/dashboard/posts', icon: FileText, roles: ['ADMIN', 'MANAGER'] },
-    { name: 'My Posts', href: '/dashboard/posts', icon: FileText, roles: ['CREATOR', 'USER'] },
-    { name: 'Create Post', href: '/dashboard/create-post', icon: PenSquare, roles: ['CREATOR', 'USER'] },
-    { name: 'Profile', href: '/dashboard/profile', icon: Settings, roles: ['ADMIN', 'MANAGER', 'CREATOR', 'USER'] },
+    { name: 'My Posts', href: '/dashboard/posts', icon: FileText, roles: ['CREATOR'] },
+    { name: 'Create Post', href: '/dashboard/create-post', icon: PenSquare, roles: ['CREATOR'] },
+    { name: 'Profile', href: '/dashboard/profile', icon: Settings, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
     { name: 'Company Settings', href: '/dashboard/settings', icon: Building, roles: ['ADMIN'] },
   ];
 
@@ -84,7 +85,7 @@ export default function Sidebar() {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-indigo-500/30 shrink-0 border border-white/10">
             {company.logo_url ? (
               <img
-                src={`http://localhost:5000${company.logo_url}`}
+                src={`${API_URL}${company.logo_url}`}
                 alt="Logo"
                 className="w-full h-full object-cover"
               />
@@ -132,7 +133,7 @@ export default function Sidebar() {
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold shadow-md overflow-hidden border border-white/10">
                 {user.profile_picture ? (
                   <img
-                    src={`http://localhost:5000${user.profile_picture}`}
+                    src={`${API_URL}${user.profile_picture}`}
                     alt={user.username}
                     className="w-full h-full object-cover"
                   />

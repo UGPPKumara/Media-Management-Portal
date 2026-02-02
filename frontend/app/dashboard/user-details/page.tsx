@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Mail, Phone, MapPin, CreditCard, ArrowLeft, Calendar, FileText, CheckCircle, Ban, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { API_URL } from '@/config/api';
 
 function UserActivityContent() {
   const searchParams = useSearchParams();
@@ -40,10 +41,10 @@ function UserActivityContent() {
     try {
       const token = localStorage.getItem('token');
       const [userRes, postsRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/users/${userId}`, {
+        axios.get(`${API_URL}/api/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:5000/api/users/${userId}/posts`, {
+        axios.get(`${API_URL}/api/users/${userId}/posts`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -86,7 +87,7 @@ function UserActivityContent() {
         <div className="w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-4 border-white shadow-md flex-shrink-0">
           {targetUser.profile_picture ? (
             <img
-              src={`http://localhost:5000${targetUser.profile_picture}`}
+              src={`${API_URL}${targetUser.profile_picture}`}
               alt={targetUser.username}
               className="w-full h-full object-cover"
             />
@@ -190,7 +191,7 @@ function UserActivityContent() {
                         <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                           {post.image_url && (
                             <img
-                              src={`http://localhost:5000${post.image_url}`}
+                              src={`${API_URL}${post.image_url}`}
                               alt={post.title}
                               className="w-full h-full object-cover"
                             />

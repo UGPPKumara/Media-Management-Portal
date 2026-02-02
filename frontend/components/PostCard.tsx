@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Download, CheckCircle, XCircle, Share2, AlertCircle, Copy } from 'lucide-react';
+import { API_URL } from '@/config/api';
 
 interface Post {
   id: number;
@@ -36,7 +37,7 @@ export default function PostCard({ post, userRole, onStatusChange }: PostCardPro
       setLoading(true);
       const token = localStorage.getItem('token');
       await axios.put(
-        `http://localhost:5000/api/posts/${post.id}/status`,
+        `${API_URL}/api/posts/${post.id}/status`,
         { status, reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -75,9 +76,9 @@ export default function PostCard({ post, userRole, onStatusChange }: PostCardPro
 
       <div className="p-4">
         {post.media_type === 'VIDEO' ? (
-          <video src={`http://localhost:5000${post.media_path}`} controls className="w-full max-h-96 object-contain bg-black" />
+          <video src={`${API_URL}${post.media_path}`} controls className="w-full max-h-96 object-contain bg-black" />
         ) : (
-          <img src={`http://localhost:5000${post.media_path}`} alt={post.title} className="w-full max-h-96 object-contain" />
+          <img src={`${API_URL}${post.media_path}`} alt={post.title} className="w-full max-h-96 object-contain" />
         )}
         <p className="mt-4 text-gray-700 whitespace-pre-wrap">{post.content}</p>
 
@@ -91,7 +92,7 @@ export default function PostCard({ post, userRole, onStatusChange }: PostCardPro
       {isManager && (
         <div className="p-4 bg-gray-50/80 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center">
           {/* Download */}
-          <a href={`http://localhost:5000${post.media_path}`} download className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 text-sm font-medium transition-colors">
+          <a href={`${API_URL}${post.media_path}`} download className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 text-sm font-medium transition-colors">
             <Download size={16} /> Download
           </a>
 

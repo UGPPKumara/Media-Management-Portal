@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/config/api';
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState('');
@@ -23,7 +24,7 @@ export default function CreatePostPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/posts', formData, {
+      await axios.post(`${API_URL}/api/posts`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -49,7 +50,7 @@ export default function CreatePostPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/posts', formData, {
+      await axios.post(`${API_URL}/api/posts`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

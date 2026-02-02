@@ -20,7 +20,7 @@ export default function UserEditModal({ isOpen, onClose, onSuccess, user }: User
     phone_number: '',
     nic: '',
     address: '',
-    role: 'USER'
+    role: 'CREATOR'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,7 +34,7 @@ export default function UserEditModal({ isOpen, onClose, onSuccess, user }: User
         phone_number: user.phone_number || '',
         nic: user.nic || '',
         address: user.address || '',
-        role: user.role || 'USER'
+        role: user.role || 'CREATOR'
       });
     }
   }, [user]);
@@ -98,7 +98,6 @@ export default function UserEditModal({ isOpen, onClose, onSuccess, user }: User
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
               >
-                <option value="USER">User</option>
                 <option value="CREATOR">Creator</option>
                 <option value="MANAGER">Manager</option>
                 <option value="ADMIN">Admin</option>

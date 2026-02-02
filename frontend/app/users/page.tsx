@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/config/api';
 
 interface User {
   id: number;
@@ -37,7 +38,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/users', {
+      const res = await axios.get(`${API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data);
@@ -49,7 +50,7 @@ export default function UsersPage() {
   const handleRoleChange = async (userId: number, newRole: string) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/users/${userId}/role`,
+      await axios.put(`${API_URL}/api/users/${userId}/role`,
         { role: newRole },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -65,7 +66,7 @@ export default function UsersPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/users', newUser, {
+      await axios.post(`${API_URL}/api/users`, newUser, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('User created successfully');
@@ -80,7 +81,7 @@ export default function UsersPage() {
     if (!confirm(`Are you sure you want to ${user.is_active ? 'block' : 'activate'} this user?`)) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/users/${user.id}/status`,
+      await axios.put(`${API_URL}/api/users/${user.id}/status`,
         { is_active: !user.is_active },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -94,7 +95,7 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to delete this user? This cannot be undone.')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
+      await axios.delete(`${API_URL}/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();

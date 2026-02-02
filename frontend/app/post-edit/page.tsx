@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save } from 'lucide-react';
+import { API_URL } from '@/config/api';
 
 function EditPostContent() {
   const router = useRouter();
@@ -20,7 +21,7 @@ function EditPostContent() {
     const fetchPost = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/posts/${id}`, {
+        const res = await axios.get(`${API_URL}/api/posts/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setFormData({ title: res.data.title, content: res.data.content });
@@ -39,7 +40,7 @@ function EditPostContent() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/posts/${id}`, formData, {
+      await axios.put(`${API_URL}/api/posts/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       router.push(`/post-view?id=${id}`);
