@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import axios from 'axios';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Mail, Phone, MapPin, CreditCard, ArrowLeft, Calendar, FileText, CheckCircle, Ban, Eye } from 'lucide-react';
 import Link from 'next/link';
 
-export default function UserActivityPage() {
-  const { id } = useParams();
+function UserActivityContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const router = useRouter();
   const [targetUser, setTargetUser] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -29,18 +30,20 @@ export default function UserActivityPage() {
       setCurrentUser(JSON.parse(storedUser));
     }
     if (id) {
-      fetchData();
+      fetchData(id);
+    } else {
+      setLoading(false); // No ID, stop loading (will show user not found)
     }
   }, [id]);
 
-  const fetchData = async () => {
+  const fetchData = async (userId: string) => {
     try {
       const token = localStorage.getItem('token');
       const [userRes, postsRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/users/${id}`, {
+        axios.get(`http://localhost:5000/api/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`http://localhost:5000/api/users/${id}/posts`, {
+        axios.get(`http://localhost:5000/api/users/${userId}/posts`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -66,7 +69,7 @@ export default function UserActivityPage() {
     );
   }
 
-  if (!targetUser) return <div className="p-8 text-center text-red-500">User not found</div>;
+  if (!targetUser) return <div className="p-8 text-center text-red-500">User not found. ID missing or invalid.</div>;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-10">
@@ -216,7 +219,7 @@ export default function UserActivityPage() {
                     </td>
                     <td className="p-4 text-right">
                       <Link
-                        href={`/dashboard/posts/${post.id}`}
+                        href={`/post-view?id=${post.id}`}
                         className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                       >
                         <Eye className="w-4 h-4" />
@@ -231,5 +234,13 @@ export default function UserActivityPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function UserActivityPage() {
+  return (
+    <Suspense fallback={<div>Loading user details...</div>}>
+      <UserActivityContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
 // Get current user profile
@@ -7,17 +7,15 @@ exports.getProfile = async (req, res) => {
         const userId = req.user.id;
         console.log('Fetching profile for user:', userId);
         
-        const [users] = await db.query(
-            'SELECT id, username, email, role, full_name, phone_number, nic, address, profile_picture FROM users WHERE id = ?', 
-            [userId]
-        );
+        const user = await User.findById(userId)
+            .select('id username email role full_name phone_number nic address profile_picture');
 
-        if (users.length === 0) {
+        if (!user) {
             console.log('User not found in DB:', userId);
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.json(users[0]);
+        res.json(user);
     } catch (err) {
         console.error('getProfile Error:', err);
         res.status(500).json({ message: 'Server error', error: err.message });
@@ -30,14 +28,12 @@ exports.updateProfile = async (req, res) => {
         const userId = req.user.id;
         const { full_name, phone_number, nic, address } = req.body;
 
-        // Note: Email and Username typically shouldn't be changed here without verification, 
-        // adhering to user request "email eka witarak change kranna ba" (email cannot be changed).
-        // Allowing other fields update.
-
-        await db.query(
-            'UPDATE users SET full_name = ?, phone_number = ?, nic = ?, address = ? WHERE id = ?',
-            [full_name, phone_number, nic, address, userId]
-        );
+        await User.findByIdAndUpdate(userId, {
+            full_name,
+            phone_number,
+            nic,
+            address
+        });
 
         res.json({ message: 'Profile updated successfully' });
     } catch (err) {
@@ -56,10 +52,9 @@ exports.changePassword = async (req, res) => {
             return res.status(400).json({ message: 'Please provide both current and new passwords' });
         }
 
-        const [users] = await db.query('SELECT password_hash FROM users WHERE id = ?', [userId]);
-        if (users.length === 0) return res.status(404).json({ message: 'User not found' });
+        const user = await User.findById(userId).select('password_hash');
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-        const user = users[0];
         const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
 
         if (!isMatch) {
@@ -67,9 +62,9 @@ exports.changePassword = async (req, res) => {
         }
 
         const salt = await bcrypt.genSalt(10);
-        const uniqueHashedPassword = await bcrypt.hash(newPassword, salt);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        await db.query('UPDATE users SET password_hash = ? WHERE id = ?', [uniqueHashedPassword, userId]);
+        await User.findByIdAndUpdate(userId, { password_hash: hashedPassword });
 
         res.json({ message: 'Password changed successfully' });
     } catch (err) {
@@ -91,12 +86,10 @@ exports.uploadProfilePicture = async (req, res) => {
 
         const userId = req.user.id;
         console.log('User ID:', userId);
-        // Construct public URL. Assuming 'uploads' is served statically.
-        // req.file.filename gives the saved filename.
-        // URL format: /uploads/profiles/<filename>
+        
         const profilePicturePath = `/uploads/profiles/${req.file.filename}`;
 
-        await db.query('UPDATE users SET profile_picture = ? WHERE id = ?', [profilePicturePath, userId]);
+        await User.findByIdAndUpdate(userId, { profile_picture: profilePicturePath });
 
         res.json({ 
             message: 'Profile picture uploaded successfully', 

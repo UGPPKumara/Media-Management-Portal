@@ -1,6 +1,8 @@
-const db = require('../config/database');
+const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 exports.register = async (req, res) => {
     try {
@@ -12,8 +14,8 @@ exports.register = async (req, res) => {
         }
 
         // Check if user exists
-        const [existing] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-        if (existing.length > 0) {
+        const existing = await User.findOne({ username });
+        if (existing) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
@@ -21,12 +23,14 @@ exports.register = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Insert user
-        // Default role is CREATOR if not specified or restricted
+        // Create user
         const userRole = role && ['MANAGER', 'ADMIN'].includes(role) ? role : 'CREATOR';
         
-        await db.query('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)', 
-            [username, hashedPassword, userRole]);
+        await User.create({
+            username,
+            password_hash: hashedPassword,
+            role: userRole
+        });
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
@@ -40,12 +44,10 @@ exports.login = async (req, res) => {
         const { username, password } = req.body;
 
         // Check user
-        const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-        if (users.length === 0) {
+        const user = await User.findOne({ username });
+        if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-
-        const user = users[0];
 
         if (!user.is_active) {
             return res.status(403).json({ message: 'your account has been blocked. Contact Admin.' });
@@ -59,27 +61,32 @@ exports.login = async (req, res) => {
 
         // Generate JWT
         const token = jwt.sign(
-            { id: user.id, username: user.username, role: user.role },
+            { id: user._id, username: user.username, role: user.role },
             process.env.JWT_SECRET || 'fallback_dev_secret_key_123',
             { expiresIn: '24h' }
         );
 
-        res.json({ token, user: { id: user.id, username: user.username, role: user.role, profile_picture: user.profile_picture } });
+        res.json({ 
+            token, 
+            user: { 
+                id: user._id, 
+                username: user.username, 
+                role: user.role, 
+                profile_picture: user.profile_picture 
+            } 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 };
 
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-
-// Helper to send email (Configure this with real credentials in .env)
+// Helper to send email
 const sendEmail = async (to, subject, text) => {
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'localhost',
         port: process.env.SMTP_PORT || 25,
-        secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+        secure: process.env.SMTP_PORT == 465,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS
@@ -97,28 +104,26 @@ const sendEmail = async (to, subject, text) => {
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const user = await User.findOne({ email });
         
-        if (users.length === 0) {
+        if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const user = users[0];
         const token = crypto.randomBytes(20).toString('hex');
         const expires = new Date(Date.now() + 3600000); // 1 Hour
 
-        await db.query('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?', 
-            [token, expires, user.id]);
+        user.reset_token = token;
+        user.reset_token_expires = expires;
+        await user.save();
 
-        const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+        const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
         
-        // Try sending email, log link just in case SMTP fails in dev
         try {
             await sendEmail(email, 'Password Reset Request', `Click here to reset your password: ${resetLink}`);
             console.log(`Reset link sent to ${email}: ${resetLink}`);
         } catch (mailErr) {
             console.error('Mail failed:', mailErr);
-            // In dev, we can return the link for testing if mail fails
             return res.json({ message: 'Email service failed, but here is the link (Dev Mode)', link: resetLink });
         }
 
@@ -133,18 +138,22 @@ exports.resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
         
-        const [users] = await db.query('SELECT * FROM users WHERE reset_token = ? AND reset_token_expires > NOW()', [token]);
+        const user = await User.findOne({ 
+            reset_token: token, 
+            reset_token_expires: { $gt: new Date() } 
+        });
         
-        if (users.length === 0) {
+        if (!user) {
             return res.status(400).json({ message: 'Invalid or expired token' });
         }
 
-        const user = users[0];
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        await db.query('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?', 
-            [hashedPassword, user.id]);
+        user.password_hash = hashedPassword;
+        user.reset_token = null;
+        user.reset_token_expires = null;
+        await user.save();
 
         res.json({ message: 'Password has been reset' });
     } catch (err) {

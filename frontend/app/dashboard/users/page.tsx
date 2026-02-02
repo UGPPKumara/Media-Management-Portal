@@ -205,7 +205,7 @@ export default function UsersPage() {
                 <td className="p-4 text-right space-x-2">
                   <div className="flex items-center justify-end gap-2">
                     <Link
-                      href={`/dashboard/users/${user.id}`}
+                      href={`/dashboard/user-details?id=${user.id}`}
                       className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                       title="View Details"
                     >

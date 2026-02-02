@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
-const db = require('./config/database');
+const connectDB = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,13 +24,36 @@ app.get('/', (req, res) => {
     res.send('Media Management Portal API Running');
 });
 
+// Health Check Route
+app.get('/api/health', async (req, res) => {
+    try {
+        const mongoose = require('mongoose');
+        if (mongoose.connection.readyState === 1) {
+            res.json({ 
+                status: 'OK', 
+                database: 'Connected',
+                message: 'MongoDB is working!'
+            });
+        } else {
+            res.status(500).json({ 
+                status: 'ERROR', 
+                database: 'Disconnected'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'ERROR', 
+            error: error.message 
+        });
+    }
+});
+
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const cleanupRoutes = require('./routes/cleanupRoutes');
 const profileRoutes = require('./routes/profileRoutes');
-// const initCronJobs = require('./services/cronService');
 
 // Use Routes
 try {
@@ -49,13 +72,12 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 // Static Uploads
 app.use('/uploads', express.static('uploads'));
 
-// Start Server
-app.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    try {
-        await db.query('SELECT 1');
-        console.log('Database connected successfully');
-    } catch (err) {
-        console.error('Database connection failed:', err);
-    }
+// Connect to MongoDB and Start Server
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('Failed to connect to MongoDB:', err);
+    process.exit(1);
 });

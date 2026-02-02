@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const Post = require('../models/Post');
 const fs = require('fs');
 const path = require('path');
 
@@ -7,12 +7,14 @@ exports.runCleanup = async (req, res) => {
         console.log('Running cleanup job...');
 
         // Find posts that are PUBLISHED and created > 7 days ago, and media not yet deleted
-        const [posts] = await db.query(
-            `SELECT id, media_path FROM posts 
-             WHERE status = 'PUBLISHED' 
-             AND media_deleted = 0 
-             AND created_at < NOW() - INTERVAL 7 DAY`
-        );
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const posts = await Post.find({
+            status: 'PUBLISHED',
+            media_deleted: false,
+            created_at: { $lt: sevenDaysAgo }
+        }).select('id media_path');
 
         if (posts.length === 0) {
             return res.json({ message: 'No files to cleanup' });
@@ -22,18 +24,6 @@ exports.runCleanup = async (req, res) => {
         const idsToUpdate = [];
 
         for (const post of posts) {
-            const filePath = path.join(__dirname, '..', post.media_path);
-            
-            // Check if file exists and delete it
-            // media_path starts with /uploads/, we need relative or absolute
-            // In server.js we serve /uploads, but on disk it is relative to server.js root join 'uploads'
-            // My postController saves: '/uploads/'+filename.
-            // So path.join(__dirname, '..', post.media_path) might be backend/../uploads/file -> backend/uploads/file.
-            // Correct logic: __dirname is backend/controllers. .. is backend.
-            // post.media_path is /uploads/foo.jpg.
-            // path.join('backend', '/uploads/foo.jpg') might resolve absolute if starts with /.
-            // safer to strip leading /
-            
             const relativePath = post.media_path.startsWith('/') ? post.media_path.slice(1) : post.media_path;
             const absolutePath = path.join(__dirname, '..', relativePath);
 
@@ -43,14 +33,17 @@ exports.runCleanup = async (req, res) => {
                     console.log(`Deleted: ${absolutePath}`);
                 }
                 deletedCount++;
-                idsToUpdate.push(post.id);
+                idsToUpdate.push(post._id);
             } catch (err) {
-                console.error(`Failed to delete file for post ${post.id}:`, err);
+                console.error(`Failed to delete file for post ${post._id}:`, err);
             }
         }
 
         if (idsToUpdate.length > 0) {
-            await db.query(`UPDATE posts SET media_deleted = 1 WHERE id IN (?)`, [idsToUpdate]);
+            await Post.updateMany(
+                { _id: { $in: idsToUpdate } },
+                { media_deleted: true }
+            );
         }
 
         res.json({ message: `Cleanup complete. Deleted ${deletedCount} files.` });

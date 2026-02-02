@@ -1,13 +1,19 @@
-const db = require('../config/database');
+const CompanySettings = require('../models/CompanySettings');
 
 // Get Company Settings
 exports.getSettings = async (req, res) => {
     try {
-        const [settings] = await db.query('SELECT * FROM company_settings WHERE id = 1');
-        if (settings.length === 0) {
-            return res.json({ company_name: 'MediaPortal', logo_url: null });
+        let settings = await CompanySettings.findOne();
+        
+        if (!settings) {
+            // Create default settings if none exist
+            settings = await CompanySettings.create({ 
+                company_name: 'MediaPortal', 
+                logo_url: null 
+            });
         }
-        res.json(settings[0]);
+        
+        res.json(settings);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -24,22 +30,24 @@ exports.updateSettings = async (req, res) => {
             logo_url = `/uploads/company/${req.file.filename}`;
         }
 
-        // Build query dynamically based on whether a new logo was uploaded
-        if (logo_url) {
-            await db.query(
-                'UPDATE company_settings SET company_name = ?, logo_url = ? WHERE id = 1',
-                [company_name, logo_url]
-            );
+        let settings = await CompanySettings.findOne();
+        
+        if (!settings) {
+            // Create if doesn't exist
+            settings = await CompanySettings.create({
+                company_name,
+                logo_url: logo_url || null
+            });
         } else {
-            await db.query(
-                'UPDATE company_settings SET company_name = ? WHERE id = 1',
-                [company_name]
-            );
+            // Update existing
+            settings.company_name = company_name;
+            if (logo_url) {
+                settings.logo_url = logo_url;
+            }
+            await settings.save();
         }
 
-        // Fetch updated settings
-        const [updated] = await db.query('SELECT * FROM company_settings WHERE id = 1');
-        res.json({ message: 'Settings updated successfully', settings: updated[0] });
+        res.json({ message: 'Settings updated successfully', settings });
 
     } catch (err) {
         console.error(err);
