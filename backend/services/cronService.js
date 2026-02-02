@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const db = require('../config/db');
+const Post = require('../models/Post');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,8 +8,13 @@ const initCronJobs = () => {
     cron.schedule('0 0 * * 0', async () => {
         console.log('[Cron] Running weekly auto-delete task...');
         try {
-            // Select posts older than 7 days
-            const [posts] = await db.query('SELECT * FROM posts WHERE created_at < NOW() - INTERVAL 7 DAY');
+            // Find posts older than 7 days
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            const posts = await Post.find({ 
+                created_at: { $lt: sevenDaysAgo } 
+            });
 
             if (posts.length > 0) {
                 console.log(`[Cron] Found ${posts.length} posts to delete.`);
@@ -17,7 +22,8 @@ const initCronJobs = () => {
                 for (const post of posts) {
                     // Delete media file if exists
                     if (post.media_path) {
-                        const filePath = path.join(__dirname, '..', post.media_path);
+                        const relativePath = post.media_path.startsWith('/') ? post.media_path.slice(1) : post.media_path;
+                        const filePath = path.join(__dirname, '..', relativePath);
                         if (fs.existsSync(filePath)) {
                             fs.unlinkSync(filePath);
                             console.log(`[Cron] Deleted file: ${filePath}`);
@@ -26,7 +32,7 @@ const initCronJobs = () => {
                 }
 
                 // Delete from DB
-                await db.query('DELETE FROM posts WHERE created_at < NOW() - INTERVAL 7 DAY');
+                await Post.deleteMany({ created_at: { $lt: sevenDaysAgo } });
                 console.log('[Cron] Weekly deletion completed successfully.');
             } else {
                 console.log('[Cron] No posts found older than 7 days.');

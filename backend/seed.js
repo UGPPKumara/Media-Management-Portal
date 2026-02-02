@@ -1,0 +1,58 @@
+// Seed script to create default admin user
+require('dotenv').config();
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const User = require('./models/User');
+const CompanySettings = require('./models/CompanySettings');
+
+const seedDatabase = async () => {
+    try {
+        // Connect to MongoDB
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('MongoDB Connected');
+
+        // Check if admin already exists
+        const existingAdmin = await User.findOne({ username: 'admin' });
+        
+        if (existingAdmin) {
+            console.log('Admin user already exists!');
+        } else {
+            // Create admin user
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash('admin123', salt);
+
+            await User.create({
+                username: 'admin',
+                email: 'nuvooraitsolutions@gmail.com',
+                password_hash: hashedPassword,
+                role: 'ADMIN',
+                is_active: true,
+                full_name: 'System Administrator'
+            });
+            console.log('✅ Admin user created successfully!');
+            console.log('   Username: admin');
+            console.log('   Password: admin123');
+        }
+
+        // Create default company settings if not exists
+        const existingSettings = await CompanySettings.findOne();
+        if (!existingSettings) {
+            await CompanySettings.create({
+                company_name: 'MediaPortal',
+                logo_url: null
+            });
+            console.log('✅ Default company settings created!');
+        } else {
+            console.log('Company settings already exist!');
+        }
+
+        console.log('\n🎉 Database seeding complete!');
+        process.exit(0);
+
+    } catch (err) {
+        console.error('Error seeding database:', err);
+        process.exit(1);
+    }
+};
+
+seedDatabase();
