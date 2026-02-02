@@ -68,6 +68,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/settings', require('./routes/settingsRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Static Uploads
 app.use('/uploads', express.static('uploads'));

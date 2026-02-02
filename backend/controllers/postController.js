@@ -2,6 +2,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
+const { createNotification, notifyUsersByRole } = require('./notificationController');
 
 exports.createPost = async (req, res) => {
     try {
@@ -16,7 +17,7 @@ exports.createPost = async (req, res) => {
         const mediaPath = '/uploads/' + file.filename;
         const status = isDraft === 'true' ? 'DRAFT' : 'PENDING';
 
-        await Post.create({
+                const newPost = await Post.create({
             user_id: req.user.id,
             title,
             content,
@@ -24,6 +25,19 @@ exports.createPost = async (req, res) => {
             media_path: mediaPath,
             status
         });
+
+        // Notify managers/admins about new post submission
+        if (status === 'PENDING') {
+            const user = await User.findById(req.user.id);
+            await notifyUsersByRole(
+                ['ADMIN', 'MANAGER'],
+                'POST_SUBMITTED',
+                'New Post Submitted',
+                `${user?.username || 'A creator'} submitted a new post: "${title}"`,
+                `/dashboard/posts`,
+                { postId: newPost._id }
+            );
+        }
 
         res.status(201).json({ message: status === 'DRAFT' ? 'Post saved as draft' : 'Post submitted for review' });
     } catch (err) {
@@ -99,8 +113,9 @@ exports.updatePostStatus = async (req, res) => {
         const { id } = req.params;
         const { status, reason, socialPlatforms } = req.body;
 
-        if (!['APPROVED', 'REJECTED', 'PUBLISHED'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status' });
+                const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
         }
 
         const updateData = { status };
@@ -109,6 +124,36 @@ exports.updatePostStatus = async (req, res) => {
         }
 
         await Post.findByIdAndUpdate(id, updateData);
+
+        // Send notification to post creator
+        const notificationData = {
+            'APPROVED': {
+                type: 'POST_APPROVED',
+                title: 'Post Approved',
+                message: `Your post "${post.title}" has been approved and is ready for publishing.`
+            },
+            'REJECTED': {
+                type: 'POST_REJECTED',
+                title: 'Post Rejected',
+                message: `Your post "${post.title}" was rejected. Reason: ${reason || 'Not specified'}`
+            },
+            'PUBLISHED': {
+                type: 'POST_PUBLISHED',
+                title: 'Post Published',
+                message: `Your post "${post.title}" is now live!`
+            }
+        };
+
+        if (notificationData[status]) {
+            await createNotification(
+                post.user_id,
+                notificationData[status].type,
+                notificationData[status].title,
+                notificationData[status].message,
+                `/post-view?id=${id}`,
+                { postId: id }
+            );
+        }
 
         // Social Publishing Logic
         if ((status === 'APPROVED' || status === 'PUBLISHED') && socialPlatforms && Array.isArray(socialPlatforms)) {

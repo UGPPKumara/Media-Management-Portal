@@ -13,7 +13,8 @@ import {
   LogOut,
   PenSquare,
   Building,
-  ChevronRight
+  ChevronRight,
+  Bell
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -67,6 +68,7 @@ export default function Sidebar() {
     { name: 'Approvals', href: '/dashboard/posts', icon: FileText, roles: ['ADMIN', 'MANAGER'] },
     { name: 'My Posts', href: '/dashboard/posts', icon: FileText, roles: ['CREATOR'] },
     { name: 'Create Post', href: '/dashboard/create-post', icon: PenSquare, roles: ['CREATOR'] },
+    { name: 'Notifications', href: '/dashboard/notifications', icon: Bell, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
     { name: 'Profile', href: '/dashboard/profile', icon: Settings, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
     { name: 'Company Settings', href: '/dashboard/settings', icon: Building, roles: ['ADMIN'] },
   ];
