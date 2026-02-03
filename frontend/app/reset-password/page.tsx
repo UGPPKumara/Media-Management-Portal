@@ -3,7 +3,8 @@
 import { useState, Suspense } from 'react';
 import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Lock, ArrowRight, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Lock, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import { API_URL } from '@/config/api';
 
 function ResetPasswordForm() {
@@ -29,8 +30,8 @@ function ResetPasswordForm() {
 
     try {
       await axios.post(`${API_URL}/api/auth/reset-password`, { token, newPassword: password });
-      setMessage('Password reset successfully!');
-      setTimeout(() => router.push('/'), 2000);
+      setMessage('Password reset successfully! Redirecting...');
+      setTimeout(() => router.push('/login'), 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to reset password');
     } finally {
@@ -39,51 +40,70 @@ function ResetPasswordForm() {
   };
 
   if (!token) {
-    return <div className="text-red-500">Invalid or missing token.</div>;
+    return (
+      <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl text-sm flex items-center">
+        <span className="mr-2">⚠️</span> Invalid or missing reset token.
+      </div>
+    );
   }
 
   return (
     <>
-      {message && <div className="bg-green-100 text-green-700 p-3 rounded mb-4 text-sm flex items-center gap-2"><CheckCircle size={16} /> {message}</div>}
-      {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>}
+      {message && (
+        <div className="bg-green-500/20 border border-green-500/50 text-green-200 px-4 py-3 rounded-xl mb-6 text-sm flex items-center">
+          <CheckCircle className="w-4 h-4 mr-2" /> {message}
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">New Password</label>
-          <div className="relative mt-1">
+      {error && (
+        <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl mb-6 text-sm flex items-center">
+          <span className="mr-2">⚠️</span> {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-300 ml-1">New Password</label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 pl-10 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-12 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              placeholder="••••••••"
               required
               minLength={6}
             />
-            <Lock className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <div className="relative mt-1">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-300 ml-1">Confirm Password</label>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-2 pl-10 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-12 py-3.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              placeholder="••••••••"
               required
               minLength={6}
             />
-            <Lock className="absolute left-3 top-2.5 text-gray-400" size={18} />
           </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition-colors"
+          className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {loading ? 'Resetting...' : 'Reset Password'}
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            'Reset Password'
+          )}
         </button>
       </form>
     </>
@@ -92,10 +112,29 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Reset Password</h2>
-        <Suspense fallback={<div>Loading...</div>}>
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/30 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-500/30 rounded-full blur-[120px]" />
+
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl w-full max-w-md shadow-2xl relative z-10">
+        <Link
+          href="/login"
+          className="inline-flex items-center text-slate-400 hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Login
+        </Link>
+
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Reset Password</h1>
+          <p className="text-slate-300">Enter your new password below</p>
+        </div>
+
+        <Suspense fallback={
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+          </div>
+        }>
           <ResetPasswordForm />
         </Suspense>
       </div>

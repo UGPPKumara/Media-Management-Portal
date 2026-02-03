@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const { createNotification, notifyUsersByRole } = require('./notificationController');
@@ -296,8 +297,19 @@ exports.updatePost = async (req, res) => {
         const post = await Post.findById(req.params.id);
         if (!post) return res.status(404).json({ message: 'Post not found' });
 
+        // Ownership check
         if (req.user.role === 'CREATOR' && post.user_id.toString() !== req.user.id.toString()) {
             return res.status(403).json({ message: 'Access denied' });
+        }
+
+        // Edit restriction for creators - can only edit DRAFT or REJECTED posts
+        if (req.user.role === 'CREATOR') {
+            const editableStatuses = ['DRAFT', 'REJECTED'];
+            if (!editableStatuses.includes(post.status)) {
+                return res.status(403).json({ 
+                    message: 'Cannot edit a submitted post. You can only edit drafts or rejected posts.' 
+                });
+            }
         }
 
         const updateData = { title, content };
@@ -316,9 +328,8 @@ exports.updatePost = async (req, res) => {
             updateData.status = 'DRAFT';
         } else if (isDraft === 'false') {
             updateData.status = 'PENDING';
-        } else if (req.user.role === 'CREATOR' && post.status === 'REJECTED') {
-            updateData.status = 'PENDING';
         }
+        // Note: rejected posts stay rejected until explicitly resubmitted
 
         await Post.findByIdAndUpdate(req.params.id, updateData);
 
@@ -333,7 +344,10 @@ exports.getUserStats = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         
-        let matchQuery = { user_id: req.user.id };
+        // Convert user_id to ObjectId for proper matching
+        const userId = new mongoose.Types.ObjectId(req.user.id);
+        
+        let matchQuery = { user_id: userId };
         
         if (startDate && endDate) {
             matchQuery.created_at = {
@@ -341,6 +355,29 @@ exports.getUserStats = async (req, res) => {
                 $lte: new Date(`${endDate}T23:59:59`)
             };
         }
+
+        // Get today's start and end
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Get this week's start (Monday)
+        const weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+        if (weekStart > today) weekStart.setDate(weekStart.getDate() - 7);
+
+        // Count today's posts
+        const todayPosts = await Post.countDocuments({
+            user_id: userId,
+            created_at: { $gte: today, $lt: tomorrow }
+        });
+
+        // Count this week's posts
+        const weekPosts = await Post.countDocuments({
+            user_id: userId,
+            created_at: { $gte: weekStart, $lt: tomorrow }
+        });
 
         const stats = await Post.aggregate([
             { $match: matchQuery },
@@ -357,7 +394,11 @@ exports.getUserStats = async (req, res) => {
             }
         ]);
 
-        res.json(stats[0] || { total: 0, drafts: 0, pending: 0, approved: 0, rejected: 0, published: 0 });
+        const result = stats[0] || { total: 0, drafts: 0, pending: 0, approved: 0, rejected: 0, published: 0 };
+        result.today = todayPosts;
+        result.thisWeek = weekPosts;
+
+        res.json(result);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
@@ -476,6 +517,49 @@ exports.getStorageStats = async (req, res) => {
         };
 
         res.json(stats);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Resubmit rejected post for review
+exports.resubmitPost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const post = await Post.findById(id);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Only owner can resubmit
+        if (post.user_id.toString() !== req.user.id.toString()) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        // Only rejected or draft posts can be resubmitted
+        if (!['REJECTED', 'DRAFT'].includes(post.status)) {
+            return res.status(400).json({ message: 'Only rejected or draft posts can be resubmitted' });
+        }
+
+        await Post.findByIdAndUpdate(id, {
+            status: 'PENDING',
+            rejection_reason: null
+        });
+
+        // Notify managers about resubmission
+        const user = await User.findById(req.user.id);
+        await notifyUsersByRole(
+            ['ADMIN', 'MANAGER'],
+            'POST_SUBMITTED',
+            'Post Resubmitted',
+            `${user?.username || 'A creator'} resubmitted a post: "${post.title}"`,
+            `/dashboard/posts`,
+            { postId: id }
+        );
+
+        res.json({ message: 'Post resubmitted for review' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

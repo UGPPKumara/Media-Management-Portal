@@ -33,7 +33,31 @@ const userSchema = new mongoose.Schema({
     address: String,
     profile_picture: String,
     reset_token: String,
-    reset_token_expires: Date
+    reset_token_expires: Date,
+    
+    // New Fields
+    last_login: {
+        type: Date,
+        default: null
+    },
+    login_count: {
+        type: Number,
+        default: 0
+    },
+    tags: [{
+        type: String,
+        trim: true
+    }],
+    admin_notes: {
+        type: String,
+        default: ''
+    },
+    invite_token: String,
+    invite_expires: Date,
+    invited_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });

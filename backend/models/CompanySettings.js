@@ -8,6 +8,45 @@ const companySettingsSchema = new mongoose.Schema({
     logo_url: {
         type: String,
         default: null
+    },
+    // Contact Information
+    company_email: {
+        type: String,
+        default: ''
+    },
+    company_phone: {
+        type: String,
+        default: ''
+    },
+    company_address: {
+        type: String,
+        default: ''
+    },
+    website_url: {
+        type: String,
+        default: ''
+    },
+    // Social Media Links
+    facebook_url: {
+        type: String,
+        default: ''
+    },
+    instagram_url: {
+        type: String,
+        default: ''
+    },
+    twitter_url: {
+        type: String,
+        default: ''
+    },
+    youtube_url: {
+        type: String,
+        default: ''
+    },
+    // System Settings
+    timezone: {
+        type: String,
+        default: 'Asia/Colombo'
     }
 }, {
     timestamps: true

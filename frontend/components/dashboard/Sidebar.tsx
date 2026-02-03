@@ -14,7 +14,8 @@ import {
   PenSquare,
   Building,
   ChevronRight,
-  Bell
+  Bell,
+  MessageSquare
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -25,6 +26,7 @@ export default function Sidebar() {
   const [user, setUser] = useState<any>(null);
   const [company, setCompany] = useState({ company_name: 'MediaPortal', logo_url: null });
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -34,14 +36,34 @@ export default function Sidebar() {
     fetchSettings();
   }, []);
 
+  // Fetch unread message count and poll every 5 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 5000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await axios.get(`${API_URL}/api/chat/unread`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUnreadMessages(res.data.unread || 0);
+    } catch (err) {
+      // Silently fail - don't spam console
+    }
+  };
+
   const fetchSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      // Auth might not be needed for public settings, but let's send it if we have it
       const res = await axios.get(`${API_URL}/api/settings`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      // Handle the case where the API returns null/empty if no settings exist, though controller defaults it.
       if (res.data) {
         setCompany(res.data);
       }
@@ -65,11 +87,11 @@ export default function Sidebar() {
   const links = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
     { name: 'Users', href: '/dashboard/users', icon: Users, roles: ['ADMIN'] },
-    { name: 'Approvals', href: '/dashboard/posts', icon: FileText, roles: ['ADMIN', 'MANAGER'] },
-    { name: 'My Posts', href: '/dashboard/posts', icon: FileText, roles: ['CREATOR'] },
+    { name: 'Review Posts', href: '/dashboard/posts', icon: FileText, roles: ['ADMIN', 'MANAGER'] },
+    { name: 'My Posts', href: '/dashboard/my-posts', icon: FileText, roles: ['CREATOR'] },
     { name: 'Create Post', href: '/dashboard/create-post', icon: PenSquare, roles: ['CREATOR'] },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare, roles: ['ADMIN', 'MANAGER', 'CREATOR'], badge: unreadMessages },
     { name: 'Notifications', href: '/dashboard/notifications', icon: Bell, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
-    { name: 'Profile', href: '/dashboard/profile', icon: Settings, roles: ['ADMIN', 'MANAGER', 'CREATOR'] },
     { name: 'Company Settings', href: '/dashboard/settings', icon: Building, roles: ['ADMIN'] },
   ];
 
@@ -122,40 +144,30 @@ export default function Sidebar() {
                   <link.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-white'}`} />
                   <span>{link.name}</span>
                 </div>
+                {/* Unread Badge for Messages */}
+                {link.badge && link.badge > 0 && (
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${isActive
+                      ? 'bg-white text-indigo-600'
+                      : 'bg-indigo-500 text-white animate-pulse'
+                    }`}>
+                    {link.badge > 99 ? '99+' : link.badge}
+                  </span>
+                )}
                 {isActive && <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
               </Link>
             );
           })}
         </nav>
 
-        {/* User / Logout Section */}
+        {/* Sign Out Section */}
         <div className="p-4 relative z-10">
-          <div className="bg-white/5 rounded-2xl p-4 border border-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-white font-bold shadow-md overflow-hidden border border-white/10">
-                {user.profile_picture ? (
-                  <img
-                    src={`${API_URL}${user.profile_picture}`}
-                    alt={user.username}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  user.username.charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-sm font-bold text-white truncate">{user.username}</p>
-                <p className="text-xs text-indigo-300 truncate font-medium">{user.role}</p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold uppercase tracking-wider transition-all duration-200"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white text-sm font-bold uppercase tracking-wider transition-all duration-200 border border-red-500/20"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
         </div>
       </aside>
 

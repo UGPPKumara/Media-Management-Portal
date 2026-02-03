@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { API_URL } from '@/config/api';
+import { useUser } from '@/context/UserContext';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setUser } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +28,8 @@ export default function LoginPage() {
       });
 
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+      // Update UserContext (this also updates localStorage)
+      setUser(res.data.user);
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid credentials');
@@ -103,36 +106,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        {/* Demo Credentials */}
-        <div className="mt-8 pt-6 border-t border-slate-700/50">
-          <p className="text-xs font-semibold text-slate-400 mb-3 text-center uppercase tracking-wider">Demo Credentials</p>
-          <div className="grid grid-cols-1 gap-2 text-xs">
-            <div className="bg-slate-800/50 p-2 rounded-lg flex justify-between items-center border border-slate-700/50">
-              <span className="text-indigo-300 font-medium">Admin</span>
-              <div className="text-slate-400">
-                <span className="mr-2">user: <span className="text-white">admin</span></span>
-                <span>pass: <span className="text-white">password123</span></span>
-              </div>
-            </div>
-            <div className="bg-slate-800/50 p-2 rounded-lg flex justify-between items-center border border-slate-700/50">
-              <span className="text-cyan-300 font-medium">Manager</span>
-              <div className="text-slate-400">
-                <span className="mr-2">user: <span className="text-white">manager</span></span>
-                <span>pass: <span className="text-white">manager123</span></span>
-              </div>
-            </div>
-            <div className="bg-slate-800/50 p-2 rounded-lg flex justify-between items-center border border-slate-700/50">
-              <span className="text-pink-300 font-medium">Creator</span>
-              <div className="text-slate-400">
-                <span className="mr-2">user: <span className="text-white">creator</span></span>
-                <span>pass: <span className="text-white">creator123</span></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
       </div>
     </div>
   );

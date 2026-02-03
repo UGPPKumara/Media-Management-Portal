@@ -114,27 +114,27 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Bell className="w-7 h-7 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-theme-primary flex items-center gap-2">
+            <Bell className="w-7 h-7 text-indigo-500" />
             Notifications
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-theme-secondary text-sm mt-1">
             {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
 
         <div className="flex gap-3">
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-theme-tertiary rounded-lg p-1">
             <button
               onClick={() => setFilter('all')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${filter === 'all' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${filter === 'all' ? 'bg-theme-card shadow text-theme-primary' : 'text-theme-secondary'
                 }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${filter === 'unread' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${filter === 'unread' ? 'bg-theme-card shadow text-theme-primary' : 'text-theme-secondary'
                 }`}
             >
               Unread
@@ -154,23 +154,23 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notification List */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="bg-theme-card rounded-2xl border border-theme overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <div className="p-12 text-center text-gray-400">
+          <div className="p-12 text-center text-theme-muted">
             <Bell className="w-16 h-16 mx-auto mb-4 opacity-30" />
             <p className="text-lg font-medium">No notifications</p>
             <p className="text-sm">You're all caught up!</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-[var(--border-primary)]">
             {filteredNotifications.map(notification => (
               <div
                 key={notification._id}
-                className={`px-6 py-4 hover:bg-gray-50 transition ${!notification.is_read ? 'bg-indigo-50/30' : ''
+                className={`px-6 py-4 hover:bg-theme-tertiary transition ${!notification.is_read ? 'bg-indigo-500/10' : ''
                   }`}
               >
                 <div className="flex gap-4">
@@ -178,11 +178,11 @@ export default function NotificationsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className={`font-medium ${!notification.is_read ? 'text-gray-900' : 'text-gray-600'}`}>
+                        <p className={`font-medium ${!notification.is_read ? 'text-theme-primary' : 'text-theme-secondary'}`}>
                           {notification.title}
                         </p>
-                        <p className="text-sm text-gray-500 mt-1">{notification.message}</p>
-                        <p className="text-xs text-gray-400 mt-2">{formatDate(notification.created_at)}</p>
+                        <p className="text-sm text-theme-secondary mt-1">{notification.message}</p>
+                        <p className="text-xs text-theme-muted mt-2">{formatDate(notification.created_at)}</p>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
                         {notification.link && (
@@ -221,21 +221,21 @@ export default function NotificationsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-100 flex justify-center gap-2">
+          <div className="px-6 py-4 border-t border-theme flex justify-center gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm rounded-lg border border-theme text-theme-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-theme-tertiary"
             >
               Previous
             </button>
-            <span className="px-3 py-1.5 text-sm text-gray-500">
+            <span className="px-3 py-1.5 text-sm text-theme-secondary">
               Page {page} of {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="px-3 py-1.5 text-sm rounded-lg border border-theme text-theme-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-theme-tertiary"
             >
               Next
             </button>

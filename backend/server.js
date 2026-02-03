@@ -69,6 +69,9 @@ app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/activity', require('./routes/activityRoutes'));
+app.use('/api/sessions', require('./routes/sessionRoutes'));
+app.use('/api/chat', require('./routes/chatRoutes'));
 
 // Static Uploads
 app.use('/uploads', express.static('uploads'));

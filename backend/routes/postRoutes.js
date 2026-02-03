@@ -30,5 +30,6 @@ router.get('/user-stats/:id', verifyToken, postController.getUserStatsById);
 // Single Post Operations
 router.get('/:id', verifyToken, postController.getPostById);
 router.put('/:id', verifyToken, upload.single('media'), postController.updatePost);
+router.put('/:id/resubmit', verifyToken, postController.resubmitPost);
 
 module.exports = router;

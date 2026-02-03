@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { API_URL } from '@/config/api';
 
 function EditPostContent() {
@@ -51,38 +51,42 @@ function EditPostContent() {
     }
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-theme-primary">
+      <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-theme-primary p-6">
       <div className="max-w-2xl mx-auto">
-        <Link href={`/post-view?id=${id}`} className="flex items-center text-gray-600 hover:text-blue-600 mb-6 w-fit">
+        <Link href={`/post-view?id=${id}`} className="flex items-center text-theme-secondary hover:text-indigo-500 mb-6 w-fit transition-colors">
           <ArrowLeft className="w-5 h-5 mr-2" /> Back to Post
         </Link>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold mb-6">Edit Post</h1>
+        <div className="bg-theme-card rounded-2xl shadow-lg p-8 border border-theme">
+          <h1 className="text-2xl font-bold mb-6 text-theme-primary">Edit Post</h1>
 
-          {error && <div className="mb-4 text-red-600 bg-red-50 p-3 rounded">{error}</div>}
+          {error && <div className="mb-4 text-red-500 bg-red-500/10 p-3 rounded-lg border border-red-500/20">{error}</div>}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Title</label>
+              <label className="block text-theme-secondary font-medium mb-2">Title</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-theme p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-theme-secondary text-theme-primary"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Description</label>
+              <label className="block text-theme-secondary font-medium mb-2">Description</label>
               <textarea
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                className="w-full border p-3 rounded-lg h-40 focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-theme p-3 rounded-xl h-40 focus:ring-2 focus:ring-indigo-500 outline-none bg-theme-secondary text-theme-primary resize-none"
               />
             </div>
 
@@ -90,9 +94,9 @@ function EditPostContent() {
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition flex items-center font-medium disabled:bg-gray-400"
+                className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-3 rounded-xl hover:from-indigo-500 hover:to-violet-500 transition flex items-center font-medium disabled:opacity-50 shadow-lg shadow-indigo-500/30"
               >
-                <Save className="w-5 h-5 mr-2" />
+                {saving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
@@ -105,7 +109,7 @@ function EditPostContent() {
 
 export default function PostEditPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-theme-primary"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>}>
       <EditPostContent />
     </Suspense>
   );

@@ -114,10 +114,10 @@ export default function PostsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-theme-primary">
             {isManager ? 'Content Management' : 'My Posts'}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-theme-secondary text-sm mt-1">
             {isManager ? 'Review and manage all submitted content' : 'View and manage your posts'}
           </p>
         </div>
@@ -133,15 +133,15 @@ export default function PostsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-wrap gap-2">
-        <Filter className="w-5 h-5 text-gray-400 mr-2" />
+      <div className="bg-theme-card p-4 rounded-xl border border-theme flex flex-wrap gap-2">
+        <Filter className="w-5 h-5 text-theme-muted mr-2" />
         {['ALL', 'PENDING', 'APPROVED', 'PUBLISHED', 'REJECTED', 'DRAFT'].map(status => (
           <button
             key={status}
             onClick={() => handleFilterChange(status)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${statusFilter === status
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-hover'
               }`}
           >
             {status}
@@ -151,10 +151,10 @@ export default function PostsPage() {
 
       {/* Posts Grid */}
       {posts.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center border border-gray-100">
-          <p className="text-gray-400 mb-4">No posts found</p>
+        <div className="bg-theme-card rounded-xl p-12 text-center border border-theme">
+          <p className="text-theme-muted mb-4">No posts found</p>
           {user?.role === 'CREATOR' && (
-            <Link href="/dashboard/create-post" className="text-indigo-600 font-medium hover:underline">
+            <Link href="/dashboard/create-post" className="text-indigo-500 font-medium hover:underline">
               Create your first post
             </Link>
           )}
@@ -162,7 +162,7 @@ export default function PostsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map(post => (
-            <div key={post.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition group">
+            <div key={post.id} className="bg-theme-card rounded-xl border border-theme overflow-hidden hover:shadow-lg transition group">
               {/* Media Preview */}
               <div className="aspect-video bg-gray-100 relative overflow-hidden">
                 {post.media_type === 'VIDEO' ? (
@@ -184,27 +184,27 @@ export default function PostsPage() {
 
               {/* Content */}
               <div className="p-4">
-                <h3 className="font-bold text-gray-900 mb-1 line-clamp-1">{post.title}</h3>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-3">{post.content}</p>
+                <h3 className="font-bold text-theme-primary mb-1 line-clamp-1">{post.title}</h3>
+                <p className="text-sm text-theme-secondary line-clamp-2 mb-3">{post.content}</p>
 
-                <div className="flex items-center justify-between text-xs text-gray-400">
+                <div className="flex items-center justify-between text-xs text-theme-muted">
                   <span>By {post.username}</span>
                   <span>{new Date(post.created_at).toLocaleDateString()}</span>
                 </div>
 
                 {post.status === 'REJECTED' && post.rejection_reason && (
-                  <div className="mt-3 p-2 bg-red-50 rounded text-xs text-red-600">
+                  <div className="mt-3 p-2 bg-red-500/10 rounded text-xs text-red-500">
                     Reason: {post.rejection_reason}
                   </div>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+              <div className="px-4 py-3 bg-theme-tertiary border-t border-theme flex justify-between items-center">
                 <div className="flex gap-2">
                   <Link
                     href={`/post-view?id=${post.id}`}
-                    className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                    className="p-2 text-theme-secondary hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition"
                   >
                     <Eye className="w-4 h-4" />
                   </Link>

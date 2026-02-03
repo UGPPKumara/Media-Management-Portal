@@ -98,11 +98,11 @@ export default function DashboardOverview() {
   };
 
   const StatCard = ({ title, value, color, icon: Icon, subValue }: any) => (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between group hover:shadow-md transition-all">
+    <div className="bg-theme-card p-6 rounded-2xl shadow-sm border border-theme flex items-start justify-between group hover:shadow-md transition-all">
       <div>
-        <p className="text-gray-500 text-sm font-medium mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
-        {subValue && <p className={`text-xs mt-2 font-medium ${subValue.includes('+') ? 'text-green-600' : 'text-gray-400'}`}>{subValue}</p>}
+        <p className="text-theme-secondary text-sm font-medium mb-1">{title}</p>
+        <h3 className="text-3xl font-bold text-theme-primary">{value}</h3>
+        {subValue && <p className={`text-xs mt-2 font-medium ${subValue.includes('+') ? 'text-green-500' : 'text-theme-muted'}`}>{subValue}</p>}
       </div>
       <div className={`p-3 rounded-xl ${color} bg-opacity-10 text-opacity-100`}>
         <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
@@ -127,7 +127,7 @@ export default function DashboardOverview() {
           <div className="flex gap-3 mt-6">
             {user?.role === 'CREATOR' ? (
               <Link
-                href="/create-post"
+                href="/dashboard/create-post"
                 className="inline-flex items-center gap-2 bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-50 transition-colors shadow-sm"
               >
                 <Plus className="w-5 h-5" />
@@ -224,34 +224,34 @@ export default function DashboardOverview() {
         <div className="lg:col-span-2 space-y-8">
           {/* Storage / Usage Widget */}
           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && storage && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="bg-theme-card p-6 rounded-2xl shadow-sm border border-theme">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-theme-primary flex items-center gap-2">
                   <Database className="w-5 h-5 text-indigo-500" />
                   System Storage
                 </h2>
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-theme-secondary">
                   {((storage.used_gb / storage.total_gb) * 100).toFixed(1)}% Used
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-4 mb-4 overflow-hidden">
+              <div className="w-full bg-theme-tertiary rounded-full h-4 mb-4 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-indigo-500 to-violet-500 h-4 rounded-full"
                   style={{ width: `${(storage.used_gb / storage.total_gb) * 100}%` }}
                 ></div>
               </div>
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 uppercase font-bold">Images</p>
-                  <p className="text-lg font-bold text-gray-800">{storage.images_gb} GB</p>
+                <div className="p-3 bg-theme-tertiary rounded-xl">
+                  <p className="text-xs text-theme-muted uppercase font-bold">Images</p>
+                  <p className="text-lg font-bold text-theme-primary">{storage.images_gb} GB</p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 uppercase font-bold">Videos</p>
-                  <p className="text-lg font-bold text-gray-800">{storage.videos_gb} GB</p>
+                <div className="p-3 bg-theme-tertiary rounded-xl">
+                  <p className="text-xs text-theme-muted uppercase font-bold">Videos</p>
+                  <p className="text-lg font-bold text-theme-primary">{storage.videos_gb} GB</p>
                 </div>
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 uppercase font-bold">Total</p>
-                  <p className="text-lg font-bold text-gray-800">{storage.used_gb} GB</p>
+                <div className="p-3 bg-theme-tertiary rounded-xl">
+                  <p className="text-xs text-theme-muted uppercase font-bold">Total</p>
+                  <p className="text-lg font-bold text-theme-primary">{storage.used_gb} GB</p>
                 </div>
               </div>
             </div>
@@ -259,24 +259,24 @@ export default function DashboardOverview() {
 
           {/* Creator Content: My Recent Posts */}
           {user?.role === 'CREATOR' && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="bg-theme-card p-6 rounded-2xl shadow-sm border border-theme">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-theme-primary flex items-center gap-2">
                   <FileText className="w-5 h-5 text-indigo-500" />
                   My Recent Posts
                 </h2>
-                <Link href="/dashboard/posts" className="text-sm text-indigo-600 hover:underline">View All</Link>
+                <Link href="/dashboard/posts" className="text-sm text-indigo-500 hover:underline">View All</Link>
               </div>
 
               {creatorPosts.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-theme-muted">
                   <p>You haven't posted anything yet.</p>
-                  <Link href="/dashboard/create-post" className="text-indigo-600 font-bold hover:underline mt-2 inline-block">Create your first post</Link>
+                  <Link href="/dashboard/create-post" className="text-indigo-500 font-bold hover:underline mt-2 inline-block">Create your first post</Link>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
-                    <thead className="text-xs text-gray-400 uppercase font-semibold border-b border-gray-100">
+                    <thead className="text-xs text-theme-muted uppercase font-semibold border-b border-theme">
                       <tr>
                         <th className="pb-3 pl-2">Title</th>
                         <th className="pb-3">Date</th>
@@ -284,20 +284,20 @@ export default function DashboardOverview() {
                         <th className="pb-3 text-right">Views</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-[var(--border-primary)]">
                       {creatorPosts.map((post: any) => (
-                        <tr key={post.id} className="group hover:bg-gray-50 transition-colors">
-                          <td className="py-3 pl-2 max-w-[200px] truncate font-medium text-gray-800">{post.title}</td>
-                          <td className="py-3 text-sm text-gray-500">{new Date(post.created_at).toLocaleDateString()}</td>
+                        <tr key={post.id} className="group hover:bg-theme-tertiary transition-colors">
+                          <td className="py-3 pl-2 max-w-[200px] truncate font-medium text-theme-primary">{post.title}</td>
+                          <td className="py-3 text-sm text-theme-secondary">{new Date(post.created_at).toLocaleDateString()}</td>
                           <td className="py-3">
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold
-                                                ${post.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' :
-                                post.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                  post.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                ${post.status === 'PUBLISHED' ? 'bg-green-500/20 text-green-500' :
+                                post.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-500' :
+                                  post.status === 'REJECTED' ? 'bg-red-500/20 text-red-500' : 'bg-gray-500/20 text-gray-500'}`}>
                               {post.status}
                             </span>
                           </td>
-                          <td className="py-3 text-right text-sm font-bold text-gray-600">
+                          <td className="py-3 text-right text-sm font-bold text-theme-secondary">
                             {post.views || 0}
                           </td>
                         </tr>
@@ -311,20 +311,20 @@ export default function DashboardOverview() {
 
           {/* Activity Log */}
           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="bg-theme-card p-6 rounded-2xl shadow-sm border border-theme">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-theme-primary flex items-center gap-2">
                   <Activity className="w-5 h-5 text-green-500" />
                   Recent Activity
                 </h2>
-                <button className="text-sm text-indigo-600 hover:underline">View Log</button>
+                <button className="text-sm text-indigo-500 hover:underline">View Log</button>
               </div>
               <div className="space-y-6 relative">
                 {/* Timeline Line */}
-                <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-gray-100"></div>
+                <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-theme-tertiary"></div>
 
                 {activity.length === 0 ? (
-                  <p className="text-center text-gray-400 py-4">No recent activity.</p>
+                  <p className="text-center text-theme-muted py-4">No recent activity.</p>
                 ) : (
                   activity.map((item: any, i: number) => (
                     <ActivityItem
@@ -378,15 +378,15 @@ export default function DashboardOverview() {
           </div>
 
           {/* Creative/Tips Widget */}
-          <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-            <h2 className="text-indigo-900 font-bold mb-3 flex items-center gap-2">
-              <Lightbulb className="w-5 h-5 text-indigo-600" />
+          <div className="bg-indigo-500/10 p-6 rounded-2xl border border-indigo-500/20">
+            <h2 className="text-indigo-400 font-bold mb-3 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-indigo-500" />
               Daily Tip
             </h2>
-            <p className="text-indigo-800/80 text-sm leading-relaxed mb-4">
+            <p className="text-theme-secondary text-sm leading-relaxed mb-4">
               "Consistency is key! Active creators who post at least 3 times a week see 40% higher engagement rates."
             </p>
-            <button className="text-xs font-bold text-indigo-700 uppercase tracking-wider hover:text-indigo-900">Read More</button>
+            <button className="text-xs font-bold text-indigo-500 uppercase tracking-wider hover:text-indigo-400">Read More</button>
           </div>
         </div>
 
@@ -399,13 +399,13 @@ export default function DashboardOverview() {
 function ActivityItem({ icon, color, title, desc, time }: any) {
   return (
     <div className="flex gap-4 relative z-10">
-      <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center flex-shrink-0 shadow-sm border-2 border-white`}>
+      <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center flex-shrink-0 shadow-sm border-2 border-theme-card`}>
         {icon}
       </div>
       <div>
-        <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-        <p className="text-gray-500 text-xs mb-1">{desc}</p>
-        <span className="text-xs font-medium text-gray-400">{time}</span>
+        <h4 className="font-bold text-theme-primary text-sm">{title}</h4>
+        <p className="text-theme-secondary text-xs mb-1">{desc}</p>
+        <span className="text-xs font-medium text-theme-muted">{time}</span>
       </div>
     </div>
   )

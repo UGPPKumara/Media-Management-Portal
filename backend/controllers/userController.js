@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find()
-            .select('id username email role is_active created_at full_name phone_number nic address profile_picture')
+            .select('id username email role is_active created_at full_name phone_number nic address profile_picture last_login login_count tags admin_notes')
             .sort({ created_at: -1 });
         res.json(users);
     } catch (err) {
@@ -184,6 +184,97 @@ exports.getUserPosts = async (req, res) => {
         }));
 
         res.json(transformedPosts);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Admin Password Reset
+exports.resetUserPassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { password } = req.body;
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        await User.findByIdAndUpdate(id, { password_hash: hashedPassword });
+        res.json({ message: 'Password reset successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Update user tags
+exports.updateUserTags = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { tags } = req.body;
+
+        if (!Array.isArray(tags)) {
+            return res.status(400).json({ message: 'Tags must be an array' });
+        }
+
+        // Validate tags (max 5, max 20 chars each)
+        const cleanTags = tags.slice(0, 5).map(t => t.toString().trim().substring(0, 20));
+
+        await User.findByIdAndUpdate(id, { tags: cleanTags });
+        res.json({ message: 'Tags updated', tags: cleanTags });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Update admin notes
+exports.updateUserNotes = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { notes } = req.body;
+
+        await User.findByIdAndUpdate(id, { admin_notes: notes || '' });
+        res.json({ message: 'Notes updated' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Get user analytics
+exports.getUserAnalytics = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await User.findById(id).select('username login_count last_login created_at');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const posts = await Post.find({ user_id: id });
+        
+        const totalPosts = posts.length;
+        const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+        const publishedPosts = posts.filter(p => p.status === 'PUBLISHED').length;
+        const pendingPosts = posts.filter(p => p.status === 'PENDING').length;
+        const rejectedPosts = posts.filter(p => p.status === 'REJECTED').length;
+
+        res.json({
+            username: user.username,
+            login_count: user.login_count || 0,
+            last_login: user.last_login,
+            member_since: user.created_at,
+            totalPosts,
+            publishedPosts,
+            pendingPosts,
+            rejectedPosts,
+            totalViews
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

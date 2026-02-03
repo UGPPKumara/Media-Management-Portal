@@ -4,10 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { User, Mail, Phone, MapPin, CreditCard, Lock, Camera, Loader2, Save } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
+import { useUser } from '@/context/UserContext';
 import { API_URL } from '@/config/api';
 
 export default function ProfilePage() {
   const { showToast } = useToast();
+  const { updateUser } = useUser();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -50,9 +52,8 @@ export default function ProfilePage() {
         nic: res.data.nic || '',
         address: res.data.address || ''
       });
-      // Store user info in local storage to update UI elsewhere if needed
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...user, ...res.data }));
+      // Update context for live header update
+      updateUser(res.data);
     } catch (err) {
       console.error(err);
       showToast('Failed to load profile', 'error');
@@ -148,9 +149,9 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto space-y-8 pb-10">
 
       {/* Header & Profile Picture */}
-      <div className="flex flex-col md:flex-row items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row items-center gap-6 bg-theme-card p-6 rounded-2xl shadow-sm border border-theme">
         <div className="relative group">
-          <div className="w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-4 border-white shadow-md">
+          <div className="w-24 h-24 rounded-full overflow-hidden bg-theme-tertiary border-4 border-theme-card shadow-md">
             {profile?.profile_picture ? (
               <img
                 src={`${API_URL}${profile.profile_picture}`}
@@ -158,14 +159,14 @@ export default function ProfilePage() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-500 text-3xl font-bold">
+              <div className="w-full h-full flex items-center justify-center bg-indigo-500/20 text-indigo-500 text-3xl font-bold">
                 {profile?.username?.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md border border-gray-100 text-gray-500 hover:text-indigo-600 transition-colors"
+            className="absolute bottom-0 right-0 bg-theme-card p-2 rounded-full shadow-md border border-theme text-theme-secondary hover:text-indigo-500 transition-colors"
           >
             <Camera className="w-4 h-4" />
           </button>
@@ -178,9 +179,9 @@ export default function ProfilePage() {
           />
         </div>
         <div className="text-center md:text-left">
-          <h1 className="text-2xl font-bold text-slate-900">{profile?.username}</h1>
-          <p className="text-slate-500">{profile?.email}</p>
-          <span className="inline-block mt-2 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full uppercase">
+          <h1 className="text-2xl font-bold text-theme-primary">{profile?.username}</h1>
+          <p className="text-theme-secondary">{profile?.email}</p>
+          <span className="inline-block mt-2 px-3 py-1 bg-indigo-500/20 text-indigo-500 text-xs font-semibold rounded-full uppercase">
             {profile?.role}
           </span>
         </div>
@@ -189,81 +190,81 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         {/* Personal Details Form */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-2 mb-6 text-indigo-600">
+        <div className="bg-theme-card p-6 rounded-2xl shadow-sm border border-theme">
+          <div className="flex items-center gap-2 mb-6 text-indigo-500">
             <User className="w-5 h-5" />
-            <h2 className="text-lg font-bold text-slate-800">Personal Details</h2>
+            <h2 className="text-lg font-bold text-theme-primary">Personal Details</h2>
           </div>
 
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Username</label>
+                <label className="text-sm font-medium text-theme-secondary">Username</label>
                 <input
                   type="text"
                   name="username"
                   value={formData.username}
                   disabled
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-slate-500 cursor-not-allowed"
+                  className="w-full px-4 py-2 bg-theme-tertiary border border-theme rounded-lg text-theme-muted cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Email</label>
+                <label className="text-sm font-medium text-theme-secondary">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   disabled
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-slate-500 cursor-not-allowed"
+                  className="w-full px-4 py-2 bg-theme-tertiary border border-theme rounded-lg text-theme-muted cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Full Name</label>
+              <label className="text-sm font-medium text-theme-secondary">Full Name</label>
               <input
                 type="text"
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary"
                 placeholder="Your Full Name"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                <label className="text-sm font-medium text-theme-secondary">Phone Number</label>
                 <input
                   type="text"
                   name="phone_number"
                   value={formData.phone_number}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                  className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary"
                   placeholder="+94 77 ..."
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">NIC / ID</label>
+                <label className="text-sm font-medium text-theme-secondary">NIC / ID</label>
                 <input
                   type="text"
                   name="nic"
                   value={formData.nic}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                  className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary"
                   placeholder="ID Number"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Address</label>
+              <label className="text-sm font-medium text-theme-secondary">Address</label>
               <textarea
                 name="address"
                 rows={3}
                 value={formData.address}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 resize-none"
+                className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary resize-none"
                 placeholder="123, Main Street..."
               />
             </div>
@@ -282,46 +283,46 @@ export default function ProfilePage() {
         </div>
 
         {/* Change Password Form */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-          <div className="flex items-center gap-2 mb-6 text-indigo-600">
+        <div className="bg-theme-card p-6 rounded-2xl shadow-sm border border-theme h-fit">
+          <div className="flex items-center gap-2 mb-6 text-indigo-500">
             <Lock className="w-5 h-5" />
-            <h2 className="text-lg font-bold text-slate-800">Security</h2>
+            <h2 className="text-lg font-bold text-theme-primary">Security</h2>
           </div>
 
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Current Password</label>
+              <label className="text-sm font-medium text-theme-secondary">Current Password</label>
               <input
                 type="password"
                 name="currentPassword"
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
                 required
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">New Password</label>
+              <label className="text-sm font-medium text-theme-secondary">New Password</label>
               <input
                 type="password"
                 name="newPassword"
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
                 required
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Confirm New Password</label>
+              <label className="text-sm font-medium text-theme-secondary">Confirm New Password</label>
               <input
                 type="password"
                 name="confirmPassword"
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
                 required
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-theme-primary bg-theme-secondary"
               />
             </div>
 

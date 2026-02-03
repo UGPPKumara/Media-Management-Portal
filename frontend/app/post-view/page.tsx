@@ -43,13 +43,13 @@ function SinglePostContent() {
   }, [id, router]);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    <div className="min-h-screen flex items-center justify-center bg-theme-primary">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
     </div>
   );
 
   if (!post) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">
+    <div className="min-h-screen flex items-center justify-center bg-theme-primary text-theme-muted">
       Post not found
     </div>
   );
@@ -57,23 +57,23 @@ function SinglePostContent() {
   const isVideo = post.media_type === 'VIDEO';
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-theme-primary p-4 md:p-8 font-sans">
       <div className="max-w-5xl mx-auto space-y-6">
-        <Link href="/dashboard" className="inline-flex items-center text-slate-500 hover:text-indigo-600 transition-colors font-medium">
+        <Link href="/dashboard" className="inline-flex items-center text-theme-secondary hover:text-indigo-500 transition-colors font-medium">
           <ArrowLeft className="w-5 h-5 mr-2" /> Back to Dashboard
         </Link>
 
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+        <div className="bg-theme-card rounded-3xl shadow-xl overflow-hidden border border-theme">
           {/* Header */}
-          <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start gap-4">
+          <div className="p-8 border-b border-theme flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="space-y-3">
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">{post.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+              <h1 className="text-3xl md:text-4xl font-bold text-theme-primary leading-tight">{post.title}</h1>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-theme-secondary">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase
-                  ${post.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                    post.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                      post.status === 'PUBLISHED' ? 'bg-blue-100 text-blue-700' :
-                        'bg-yellow-100 text-yellow-700'}`}>
+                  ${post.status === 'APPROVED' ? 'bg-green-500/20 text-green-500' :
+                    post.status === 'REJECTED' ? 'bg-red-500/20 text-red-500' :
+                      post.status === 'PUBLISHED' ? 'bg-blue-500/20 text-blue-500' :
+                        'bg-yellow-500/20 text-yellow-500'}`}>
                   {post.status}
                 </span>
                 <span className="flex items-center gap-1"><User className="w-4 h-4" /> {post.username}</span>
@@ -83,7 +83,7 @@ function SinglePostContent() {
 
             {/* Edit Button for Creator (if Rejected or Draft) */}
             {user?.role === 'CREATOR' && (post.status === 'REJECTED' || post.status === 'DRAFT') && (
-              <Link href={`/post-edit?id=${post.id}`} className="flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-medium shadow-lg shadow-indigo-200">
+              <Link href={`/post-edit?id=${post.id}`} className="flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:from-indigo-500 hover:to-violet-500 transition font-medium shadow-lg shadow-indigo-500/30">
                 <Edit className="w-4 h-4 mr-2" /> Edit & Resubmit
               </Link>
             )}
@@ -104,21 +104,21 @@ function SinglePostContent() {
             </div>
 
             {/* Details Column */}
-            <div className="lg:col-span-2 p-8 bg-white border-l border-slate-100 flex flex-col">
+            <div className="lg:col-span-2 p-8 bg-theme-card border-l border-theme flex flex-col">
               <div className="flex-1 space-y-6">
                 <div>
-                  <h3 className="text-sm uppercase tracking-wider text-slate-400 font-bold mb-3 flex items-center gap-2">
+                  <h3 className="text-sm uppercase tracking-wider text-theme-muted font-bold mb-3 flex items-center gap-2">
                     <Tag className="w-4 h-4" /> Description
                   </h3>
-                  <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-lg">{post.content}</p>
+                  <p className="text-theme-secondary leading-relaxed whitespace-pre-wrap text-lg">{post.content}</p>
                 </div>
 
                 {post.status === 'REJECTED' && post.rejection_reason && (
-                  <div className="bg-red-50 p-6 rounded-2xl border border-red-100 mt-8">
-                    <h4 className="text-red-800 font-bold mb-2 flex items-center gap-2">
+                  <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/20 mt-8">
+                    <h4 className="text-red-500 font-bold mb-2 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-red-500"></span> Rejection Reason
                     </h4>
-                    <p className="text-red-700 text-sm leading-relaxed">{post.rejection_reason}</p>
+                    <p className="text-red-400 text-sm leading-relaxed">{post.rejection_reason}</p>
                     <p className="text-xs text-red-500 mt-4 font-medium uppercase tracking-wide">Action Required</p>
                   </div>
                 )}
@@ -133,7 +133,7 @@ function SinglePostContent() {
 
 export default function PostViewPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-theme-primary"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div></div>}>
       <SinglePostContent />
     </Suspense>
   );

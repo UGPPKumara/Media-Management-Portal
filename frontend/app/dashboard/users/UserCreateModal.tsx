@@ -43,7 +43,6 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
       });
       onSuccess();
       onClose();
-      // Reset form
       setFormData({
         username: '',
         email: '',
@@ -64,14 +63,14 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-theme-card rounded-2xl shadow-xl w-full max-w-2xl mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] border border-theme">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-slate-800">Create New User</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-theme flex-shrink-0">
+          <h2 className="text-lg font-semibold text-theme-primary">Create New User</h2>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors"
+            className="p-2 text-theme-muted hover:text-theme-primary hover:bg-theme-tertiary rounded-full transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -81,7 +80,7 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
         <div className="overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg">
+              <div className="p-3 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg">
                 {error}
               </div>
             )}
@@ -89,54 +88,54 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Account Details */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Account Details</h3>
+                <h3 className="text-sm font-semibold text-theme-primary uppercase tracking-wider">Account Details</h3>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Username</label>
+                  <label className="text-sm font-medium text-theme-secondary">Username</label>
                   <input
                     type="text"
                     name="username"
                     required
                     value={formData.username}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary placeholder:text-theme-muted"
                     placeholder="johndoe"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Email Address</label>
+                  <label className="text-sm font-medium text-theme-secondary">Email Address</label>
                   <input
                     type="email"
                     name="email"
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary placeholder:text-theme-muted"
                     placeholder="john@example.com"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Password</label>
+                  <label className="text-sm font-medium text-theme-secondary">Password</label>
                   <input
                     type="password"
                     name="password"
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary placeholder:text-theme-muted"
                     placeholder="••••••••"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Role</label>
+                  <label className="text-sm font-medium text-theme-secondary">Role</label>
                   <select
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white text-slate-600 cursor-pointer"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-theme-secondary text-theme-primary cursor-pointer"
                   >
                     <option value="CREATOR">Creator</option>
                     <option value="MANAGER">Manager</option>
@@ -147,71 +146,71 @@ export default function UserCreateModal({ isOpen, onClose, onSuccess }: UserCrea
 
               {/* Personal Details */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Personal Details</h3>
+                <h3 className="text-sm font-semibold text-theme-primary uppercase tracking-wider">Personal Details</h3>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Full Name</label>
+                  <label className="text-sm font-medium text-theme-secondary">Full Name</label>
                   <input
                     type="text"
                     name="full_name"
                     value={formData.full_name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary placeholder:text-theme-muted"
                     placeholder="John Doe"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                  <label className="text-sm font-medium text-theme-secondary">Phone Number</label>
                   <input
                     type="text"
                     name="phone_number"
                     value={formData.phone_number}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary placeholder:text-theme-muted"
                     placeholder="+94 77 123 4567"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">NIC / ID Number</label>
+                  <label className="text-sm font-medium text-theme-secondary">NIC / ID Number</label>
                   <input
                     type="text"
                     name="nic"
                     value={formData.nic}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary placeholder:text-theme-muted"
                     placeholder="991234567V"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-slate-700">Address</label>
+                  <label className="text-sm font-medium text-theme-secondary">Address</label>
                   <textarea
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-600 resize-none"
+                    className="w-full px-4 py-2 border border-theme rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-theme-primary bg-theme-secondary resize-none placeholder:text-theme-muted"
                     placeholder="123, Main Street, Colombo"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-theme">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {loading ? 'Creating...' : 'Create User'}
