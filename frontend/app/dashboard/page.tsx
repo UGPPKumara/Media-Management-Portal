@@ -317,7 +317,7 @@ export default function DashboardOverview() {
                   <Activity className="w-5 h-5 text-green-500" />
                   Recent Activity
                 </h2>
-                <button className="text-sm text-indigo-500 hover:underline">View Log</button>
+                <Link href="/dashboard/activity" className="text-sm text-indigo-500 hover:underline">View Log</Link>
               </div>
               <div className="space-y-6 relative">
                 {/* Timeline Line */}
@@ -326,7 +326,7 @@ export default function DashboardOverview() {
                 {activity.length === 0 ? (
                   <p className="text-center text-theme-muted py-4">No recent activity.</p>
                 ) : (
-                  activity.map((item: any, i: number) => (
+                  activity.slice(0, 5).map((item: any, i: number) => (
                     <ActivityItem
                       key={i}
                       icon={item.type === 'USER_JOINED' ? <Users className="w-4 h-4 text-white" /> : <FileText className="w-4 h-4 text-white" />}

@@ -20,6 +20,7 @@ router.get('/stats', verifyRole(['ADMIN', 'MANAGER']), postController.getSystemS
 router.post('/:id/publish', verifyToken, postController.publishToSocials);
 
 // Stats & Activity
+router.get('/activity/all', verifyRole(['ADMIN', 'MANAGER']), postController.getAllActivity);
 router.get('/activity', verifyRole(['ADMIN', 'MANAGER']), postController.getDashboardActivity);
 router.get('/storage', verifyRole(['ADMIN', 'MANAGER']), postController.getStorageStats);
 

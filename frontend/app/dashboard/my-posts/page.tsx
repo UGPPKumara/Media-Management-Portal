@@ -5,6 +5,7 @@ import axios from 'axios';
 import Link from 'next/link';
 import { API_URL } from '@/config/api';
 import { useToast } from '@/context/ToastContext';
+import { useSearchParams } from 'next/navigation';
 import {
   FileText, Filter, Plus, Eye, Edit2, RotateCcw, Trash2, Clock, CheckCircle, XCircle, AlertTriangle, X, Save, Upload, Image as ImageIcon, RefreshCw, MessageSquare
 } from 'lucide-react';
@@ -24,6 +25,7 @@ type Post = {
 
 export default function MyPostsPage() {
   const { showToast } = useToast();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +58,16 @@ export default function MyPostsPage() {
     } else {
       setFilteredPosts(posts.filter(p => p.status === filter));
     }
-  }, [posts, filter]);
+
+    // Check for deep linking view param
+    const viewId = searchParams.get('view');
+    if (viewId && posts.length > 0) {
+      const post = posts.find(p => p.id === viewId);
+      if (post) {
+        setViewPost(post);
+      }
+    }
+  }, [posts, filter, searchParams]);
 
   const fetchStats = async () => {
     try {

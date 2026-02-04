@@ -35,7 +35,7 @@ exports.createPost = async (req, res) => {
                 'POST_SUBMITTED',
                 'New Post Submitted',
                 `${user?.username || 'A creator'} submitted a new post: "${title}"`,
-                `/dashboard/posts`,
+                `/dashboard/posts?view=${newPost._id}`,
                 { postId: newPost._id }
             );
         }
@@ -151,7 +151,7 @@ exports.updatePostStatus = async (req, res) => {
                 notificationData[status].type,
                 notificationData[status].title,
                 notificationData[status].message,
-                `/post-view?id=${id}`,
+                `/dashboard/my-posts?view=${id}`,
                 { postId: id }
             );
         }
@@ -447,6 +447,53 @@ exports.getUserStatsById = async (req, res) => {
             stats: stats[0] || { total: 0, drafts: 0, pending: 0, approved: 0, rejected: 0, published: 0 }, 
             user: user || {} 
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getAllActivity = async (req, res) => {
+    try {
+        if (!['ADMIN', 'MANAGER'].includes(req.user.role)) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        const [users, posts] = await Promise.all([
+            User.find()
+                .select('username created_at role email')
+                .sort({ created_at: -1 })
+                .limit(50)
+                .lean(),
+            Post.find()
+                .populate('user_id', 'username')
+                .select('title created_at user_id status')
+                .sort({ created_at: -1 })
+                .limit(50)
+                .lean()
+        ]);
+
+        const userActivity = users.map(u => ({
+            id: u._id,
+            username: u.username,
+            created_at: u.created_at,
+            type: 'USER_JOINED',
+            details: `Role: ${u.role}, Email: ${u.email}`
+        }));
+
+        const postActivity = posts.map(p => ({
+            id: p._id,
+            title: p.title,
+            created_at: p.created_at,
+            type: 'POST_CREATED',
+            username: p.user_id?.username,
+            details: `Status: ${p.status}`
+        }));
+
+        const activity = [...userActivity, ...postActivity]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        res.json(activity);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

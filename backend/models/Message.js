@@ -21,6 +21,10 @@ const MessageSchema = new mongoose.Schema({
     }]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
+// Indexes for faster queries
+MessageSchema.index({ conversation_id: 1, created_at: 1 });
+MessageSchema.index({ read_by: 1 });
+
 // Virtual for id
 MessageSchema.virtual('id').get(function() {
     return this._id.toHexString();

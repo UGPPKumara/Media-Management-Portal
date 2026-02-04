@@ -217,18 +217,57 @@ export default function Header() {
                       key={n._id}
                       className={`px-4 py-3 border-b border-theme hover:bg-theme-tertiary cursor-pointer transition-colors ${!n.is_read ? 'bg-indigo-500/10' : ''}`}
                       onClick={() => {
-                        // Mark as read first
+                        // 1. Mark as read immediately
                         if (!n.is_read) markAsRead(n._id);
-                        // Close dropdown
                         setIsNotificationOpen(false);
-                        // Navigate to the link if exists
-                        if (n.link) {
-                          router.push(n.link);
-                        } else {
-                          // Default navigation based on notification type
-                          if (n.type.includes('POST')) {
-                            router.push('/dashboard/my-posts');
+
+                        // 2. Robust Role Check
+                        let currentUserRole = user?.role;
+                        if (!currentUserRole) {
+                          try {
+                            const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+                            currentUserRole = localUser.role;
+                          } catch (e) {
+                            console.error('Failed to parse user from storage');
                           }
+                        }
+
+                        const isManager = currentUserRole === 'ADMIN' || currentUserRole === 'MANAGER';
+
+                        // 3. Post ID Extraction
+                        const getPostId = (link: string | null) => {
+                          if (!link) return null;
+                          try {
+                            if (link.includes('view=')) {
+                              return link.split('view=')[1].split('&')[0];
+                            }
+                            if (link.includes('id=')) {
+                              return link.split('id=')[1].split('&')[0];
+                            }
+                            const url = new URL(link, window.location.origin);
+                            return url.searchParams.get('id') || url.searchParams.get('view');
+                          } catch (e) {
+                            return null;
+                          }
+                        };
+
+                        const postId = getPostId(n.link);
+
+                        // 4. Role-Based Routing
+                        // Explicitly route POST_SUBMITTED to Content Management (Admin view)
+                        if (n.type === 'POST_SUBMITTED') {
+                          router.push(postId ? `/dashboard/posts?view=${postId}` : '/dashboard/posts');
+                          return;
+                        }
+
+                        if (n.type.includes('POST')) {
+                          if (isManager) {
+                            router.push(postId ? `/dashboard/posts?view=${postId}` : '/dashboard/posts');
+                          } else {
+                            router.push(postId ? `/dashboard/my-posts?view=${postId}` : '/dashboard/my-posts');
+                          }
+                        } else if (n.link) {
+                          router.push(n.link);
                         }
                       }}
                     >

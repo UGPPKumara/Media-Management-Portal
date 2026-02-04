@@ -31,6 +31,11 @@ const ConversationSchema = new mongoose.Schema({
     }
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
+// Indexes for faster lookups
+ConversationSchema.index({ creator_id: 1 });
+ConversationSchema.index({ participants: 1 });
+ConversationSchema.index({ last_message_at: -1 });
+
 // Virtual for id
 ConversationSchema.virtual('id').get(function() {
     return this._id.toHexString();

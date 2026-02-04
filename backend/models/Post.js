@@ -41,6 +41,11 @@ const postSchema = new mongoose.Schema({
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
+// Indexes for performance
+postSchema.index({ user_id: 1, status: 1 });
+postSchema.index({ status: 1 });
+postSchema.index({ created_at: -1 });
+
 // Virtual for 'id' to match MySQL behavior
 postSchema.virtual('id').get(function() {
     return this._id.toHexString();
