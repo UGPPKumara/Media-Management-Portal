@@ -6,13 +6,16 @@ import { User, Mail, Phone, MapPin, CreditCard, Lock, Camera, Loader2, Save } fr
 import { useToast } from '@/context/ToastContext';
 import { useUser } from '@/context/UserContext';
 import { API_URL } from '@/config/api';
+import { getImageUrl } from '@/utils/imageUtils';
 
 export default function ProfilePage() {
   const { showToast } = useToast();
   const { updateUser } = useUser();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
   const [saving, setSaving] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Form States
   const [formData, setFormData] = useState({
@@ -128,6 +131,10 @@ export default function ProfilePage() {
     const formData = new FormData();
     formData.append('profile_picture', file);
 
+    // Instant Preview
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewImage(objectUrl);
+
     try {
       const token = localStorage.getItem('token');
       await axios.post(`${API_URL}/api/profile/picture`, formData, {
@@ -136,11 +143,14 @@ export default function ProfilePage() {
           'Content-Type': 'multipart/form-data'
         }
       });
+
       fetchProfile();
     } catch (err: any) {
       console.error('Upload error details:', err);
       showToast(err.response?.data?.message || 'Failed to upload profile picture', 'error');
+      setPreviewImage(null); // Revert on error
     }
+
   };
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
@@ -152,9 +162,10 @@ export default function ProfilePage() {
       <div className="flex flex-col md:flex-row items-center gap-6 bg-theme-card p-6 rounded-2xl shadow-sm border border-theme">
         <div className="relative group">
           <div className="w-24 h-24 rounded-full overflow-hidden bg-theme-tertiary border-4 border-theme-card shadow-md">
-            {profile?.profile_picture ? (
+
+            {previewImage || profile?.profile_picture ? (
               <img
-                src={`${API_URL}${profile.profile_picture}`}
+                src={previewImage || getImageUrl(profile?.profile_picture)}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />

@@ -5,8 +5,9 @@ import axios from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { API_URL } from '@/config/api';
+import { getImageUrl } from '@/utils/imageUtils';
 import { useToast } from '@/context/ToastContext';
-import { Eye, Edit, Trash2, Filter, Plus, CheckCircle, XCircle, Clock, Send, X, AlertTriangle, Share2 } from 'lucide-react';
+import { Eye, Edit, Trash2, Filter, Plus, CheckCircle, XCircle, Clock, Send, X, AlertTriangle, Share2, Search, User } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -28,6 +29,11 @@ export default function PostsPage() {
   const [user, setUser] = useState<any>(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [viewPost, setViewPost] = useState<Post | null>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+
+  // ... existing states ...
 
   // Rejection Modal State
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -56,7 +62,48 @@ export default function PostsPage() {
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
     fetchPosts();
+    if (parsedUser.role === 'ADMIN' || parsedUser.role === 'MANAGER') {
+      fetchStats();
+    }
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/posts/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch stats', err);
+    }
+  };
+
+  // ... existing useEffect (view param) ...
+
+  // ... existing fetchPosts ...
+
+  // Filter posts client-side for search and basic filtering
+  // (Date filtering is handled by API usually, but for now let's do client side if manageable or pass to API if we modify fetchPosts)
+  // The user wants "manage karaganna lesi" so let's do a robust client filter for the current loaded list
+  const filteredPosts = posts.filter(post => {
+    const matchesStatus = statusFilter === 'ALL' || post.status === statusFilter;
+    const matchesSearch =
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.username.toLowerCase().includes(searchQuery.toLowerCase());
+
+    let matchesDate = true;
+    if (dateRange.start) {
+      matchesDate = matchesDate && new Date(post.created_at) >= new Date(dateRange.start);
+    }
+    if (dateRange.end) {
+      const endDate = new Date(dateRange.end);
+      endDate.setHours(23, 59, 59);
+      matchesDate = matchesDate && new Date(post.created_at) <= endDate;
+    }
+
+    return matchesStatus && matchesSearch && matchesDate;
+  });
 
   useEffect(() => {
     // Check for deep linking view param
@@ -231,25 +278,102 @@ export default function PostsPage() {
         )}
       </div>
 
-      {/* Filters */}
-      <div className="bg-theme-card p-4 rounded-xl border border-theme flex flex-wrap gap-2">
-        <Filter className="w-5 h-5 text-theme-muted mr-2" />
-        {['ALL', 'PENDING', 'APPROVED', 'PUBLISHED', 'REJECTED', 'DRAFT'].map(status => (
-          <button
-            key={status}
-            onClick={() => handleFilterChange(status)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${statusFilter === status
-              ? 'bg-indigo-600 text-white'
-              : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-hover'
-              }`}
-          >
-            {status}
-          </button>
-        ))}
+      {/* Metrics Cards (Manager Only) */}
+      {isManager && stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-theme-card p-4 rounded-xl border border-theme shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-indigo-500/10 rounded-lg">
+                <Filter className="w-5 h-5 text-indigo-500" />
+              </div>
+              <span className="text-theme-secondary text-sm font-medium">Total Posts</span>
+            </div>
+            <p className="text-2xl font-bold text-theme-primary">{stats.total_posts}</p>
+          </div>
+          <div className="bg-theme-card p-4 rounded-xl border border-theme shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-yellow-500/10 rounded-lg">
+                <Clock className="w-5 h-5 text-yellow-500" />
+              </div>
+              <span className="text-theme-secondary text-sm font-medium">Pending Review</span>
+            </div>
+            <p className="text-2xl font-bold text-theme-primary">{stats.pending_posts}</p>
+          </div>
+          <div className="bg-theme-card p-4 rounded-xl border border-theme shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+              </div>
+              <span className="text-theme-secondary text-sm font-medium">Published</span>
+            </div>
+            <p className="text-2xl font-bold text-theme-primary">{stats.published_posts}</p>
+          </div>
+          {/* You could add Total Users or another metric here */}
+          <div className="bg-theme-card p-4 rounded-xl border border-theme shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <User className="w-5 h-5 text-blue-500" />
+              </div>
+              <span className="text-theme-secondary text-sm font-medium">Total Creators</span>
+            </div>
+            <p className="text-2xl font-bold text-theme-primary">{stats.total_users}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Advanced Filters */}
+      <div className="bg-theme-card p-4 rounded-xl border border-theme space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 justify-between">
+
+          {/* Status Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {['ALL', 'PENDING', 'APPROVED', 'PUBLISHED', 'REJECTED', 'DRAFT'].map(status => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${statusFilter === status
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-hover'
+                  }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+
+          {/* Search & Date */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-muted" />
+              <input
+                type="text"
+                placeholder="Search title or author..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-theme-tertiary border border-theme rounded-lg text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                className="px-3 py-2 bg-theme-tertiary border border-theme rounded-lg text-sm text-theme-secondary focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <span className="text-theme-muted">-</span>
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                className="px-3 py-2 bg-theme-tertiary border border-theme rounded-lg text-sm text-theme-secondary focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Posts Table */}
-      {posts.length === 0 ? (
+      {filteredPosts.length === 0 ? (
         <div className="bg-theme-card rounded-xl p-12 text-center border border-theme">
           <p className="text-theme-muted mb-4">No posts found</p>
           {user?.role === 'CREATOR' && (
@@ -274,7 +398,7 @@ export default function PostsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-primary)]">
-                {posts.map(post => (
+                {filteredPosts.map(post => (
                   <tr key={post.id} className="hover:bg-theme-tertiary transition-colors group">
                     {/* Media Thumbnail */}
                     <td className="p-4">
@@ -283,9 +407,9 @@ export default function PostsPage() {
                         onClick={() => setViewPost(post)}
                       >
                         {post.media_type === 'VIDEO' ? (
-                          <video src={`${API_URL}${post.media_path}`} className="w-full h-full object-cover" />
+                          <video src={getImageUrl(post.media_path)} className="w-full h-full object-cover" />
                         ) : (
-                          <img src={`${API_URL}${post.media_path}`} alt="" className="w-full h-full object-cover" />
+                          <img src={getImageUrl(post.media_path)} alt="" className="w-full h-full object-cover" />
                         )}
                       </div>
                     </td>
@@ -400,9 +524,9 @@ export default function PostsPage() {
             {/* Media Side */}
             <div className="w-full md:w-2/3 bg-black flex items-center justify-center bg-theme-tertiary">
               {viewPost.media_type === 'VIDEO' ? (
-                <video controls src={`${API_URL}${viewPost.media_path}`} className="max-h-[60vh] md:max-h-full w-full object-contain" />
+                <video controls src={getImageUrl(viewPost.media_path)} className="max-h-[60vh] md:max-h-full w-full object-contain" />
               ) : (
-                <img src={`${API_URL}${viewPost.media_path}`} alt="" className="max-h-[60vh] md:max-h-full w-full object-contain" />
+                <img src={getImageUrl(viewPost.media_path)} alt="" className="max-h-[60vh] md:max-h-full w-full object-contain" />
               )}
             </div>
 

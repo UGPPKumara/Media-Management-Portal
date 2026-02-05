@@ -28,7 +28,11 @@ const ConversationSchema = new mongoose.Schema({
         type: String,
         enum: ['OPEN', 'CLOSED'],
         default: 'OPEN'
-    }
+    },
+    deleted_by: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 // Indexes for faster lookups

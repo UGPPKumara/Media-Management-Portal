@@ -108,7 +108,7 @@ exports.updateUser = async (req, res) => {
         const { id } = req.params;
         
         // Permission check
-        if (req.user.role !== 'ADMIN' && req.user.id != id) {
+        if (!['ADMIN', 'MANAGER'].includes(req.user.role) && req.user.id != id) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
@@ -145,7 +145,7 @@ exports.getUserById = async (req, res) => {
         const { id } = req.params;
 
         // Permission check
-        if (req.user.role !== 'ADMIN' && req.user.id != id) {
+        if (!['ADMIN', 'MANAGER'].includes(req.user.role) && req.user.id != id) {
             return res.status(403).json({ message: 'Access denied' });
         }
 
@@ -168,7 +168,7 @@ exports.getUserPosts = async (req, res) => {
         const { id } = req.params;
 
         // Permission check
-        if (req.user.role !== 'ADMIN' && req.user.id != id) {
+        if (!['ADMIN', 'MANAGER'].includes(req.user.role) && req.user.id != id) {
             return res.status(403).json({ message: 'Access denied' });
         }
 

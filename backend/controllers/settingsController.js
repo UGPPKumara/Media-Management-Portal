@@ -38,7 +38,7 @@ exports.updateSettings = async (req, res) => {
 
         let logo_url = null;
         if (req.file) {
-            logo_url = `/uploads/company/${req.file.filename}`;
+            logo_url = req.file.path; // Cloudinary URL
         }
 
         let settings = await CompanySettings.findOne();

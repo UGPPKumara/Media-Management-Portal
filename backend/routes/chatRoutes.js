@@ -24,4 +24,7 @@ router.post('/conversations/:id/messages', chatController.sendMessage);
 // Close conversation (Manager/Admin only)
 router.put('/conversations/:id/close', chatController.closeConversation);
 
+// Delete conversation
+router.delete('/conversations/:id', chatController.deleteConversation);
+
 module.exports = router;

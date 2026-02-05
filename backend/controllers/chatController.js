@@ -24,6 +24,9 @@ exports.getConversations = async (req, res) => {
             }
         }
 
+        // Filter out conversations deleted by this user
+        query.deleted_by = { $ne: userId };
+
         const conversations = await Conversation.find(query)
             .populate('participants', 'username profile_picture role')
             .populate('creator_id', 'username profile_picture role')
@@ -116,9 +119,10 @@ exports.sendMessage = async (req, res) => {
             read_by: [userId]
         });
 
-        // Update conversation last message
+        // Update conversation last message and revive if deleted
         conversation.last_message = content.trim().substring(0, 100);
         conversation.last_message_at = new Date();
+        conversation.deleted_by = []; // Un-hide for everyone
         
         // Add sender to participants if not already
         if (!conversation.participants.includes(userId)) {
@@ -221,6 +225,38 @@ exports.closeConversation = async (req, res) => {
         }
 
         res.json(conversation);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Delete conversation
+exports.deleteConversation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = new mongoose.Types.ObjectId(req.user.id);
+
+        const conversation = await Conversation.findById(id);
+        if (!conversation) {
+            return res.status(404).json({ message: 'Conversation not found' });
+        }
+
+        // Check access: Admin, Manager, or the Creator of the conversation
+        const isAuthorized = 
+            ['ADMIN', 'MANAGER'].includes(req.user.role) || 
+            (req.user.role === 'CREATOR' && conversation.creator_id.toString() === req.user.id);
+
+        if (!isAuthorized) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        // Soft delete: Hide conversation for this user
+        await Conversation.findByIdAndUpdate(id, {
+            $addToSet: { deleted_by: userId }
+        });
+
+        res.json({ message: 'Conversation deleted successfully' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

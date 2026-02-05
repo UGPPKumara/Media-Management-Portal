@@ -87,7 +87,7 @@ exports.uploadProfilePicture = async (req, res) => {
         const userId = req.user.id;
         console.log('User ID:', userId);
         
-        const profilePicturePath = `/uploads/profiles/${req.file.filename}`;
+        const profilePicturePath = req.file.path; // Cloudinary URL
 
         await User.findByIdAndUpdate(userId, { profile_picture: profilePicturePath });
 

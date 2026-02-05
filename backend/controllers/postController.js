@@ -15,7 +15,7 @@ exports.createPost = async (req, res) => {
         }
 
         const mediaType = file.mimetype.startsWith('video') ? 'VIDEO' : 'IMAGE';
-        const mediaPath = '/uploads/' + file.filename;
+        const mediaPath = file.path; // Cloudinary URL
         const status = isDraft === 'true' ? 'DRAFT' : 'PENDING';
 
                 const newPost = await Post.create({
@@ -218,6 +218,8 @@ exports.deletePost = async (req, res) => {
         }
 
         // Delete file if exists
+        // TODO: Delete from Cloudinary using public_id
+        /*
         if (post.media_path) {
             const relativePath = post.media_path.startsWith('/') ? post.media_path.slice(1) : post.media_path;
             const filePath = path.join(__dirname, '..', relativePath);
@@ -225,6 +227,7 @@ exports.deletePost = async (req, res) => {
                 fs.unlinkSync(filePath);
             }
         }
+        */
 
         await Post.findByIdAndDelete(id);
         res.json({ message: 'Post deleted successfully' });
@@ -317,7 +320,7 @@ exports.updatePost = async (req, res) => {
         // Handle Media Update
         if (newFile) {
             const mediaType = newFile.mimetype.startsWith('video') ? 'VIDEO' : 'IMAGE';
-            const mediaPath = '/uploads/' + newFile.filename;
+            const mediaPath = newFile.path; // Cloudinary URL
             updateData.media_type = mediaType;
             updateData.media_path = mediaPath;
         }
@@ -440,7 +443,7 @@ exports.getUserStatsById = async (req, res) => {
                     }
                 }
             ]),
-            User.findById(id).select('username email role')
+            User.findById(id).select('username email role profile_picture')
         ]);
 
         res.json({ 

@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Shield, Ban, CheckCircle, Trash2, Search, Plus, Edit2, Filter, Key, Download, Users, UserCheck, UserX, RefreshCw, Tag, FileText, Clock, Activity, Monitor, Mail, X, Eye } from 'lucide-react';
+import { Shield, Ban, CheckCircle, Trash2, Search, Plus, Edit2, Filter, Key, Download, Users, UserCheck, UserX, RefreshCw, Tag, FileText, Clock, Activity, Monitor, Mail, X, Eye, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
 import UserCreateModal from './UserCreateModal';
 import UserEditModal from './UserEditModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { API_URL } from '@/config/api';
+import { getImageUrl } from '@/utils/imageUtils';
 import { useToast } from '@/context/ToastContext';
 
 export default function UsersPage() {
@@ -37,6 +38,7 @@ export default function UsersPage() {
   const [userForPasswordReset, setUserForPasswordReset] = useState<any>(null);
   const [newPassword, setNewPassword] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
   // New Modals
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
@@ -54,7 +56,12 @@ export default function UsersPage() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('CREATOR');
-  const [modalLoading, setModalLoading] = useState(false);
+  // Performance Modal
+  const [isPerformanceModalOpen, setIsPerformanceModalOpen] = useState(false);
+  const [performanceStats, setPerformanceStats] = useState<any>(null);
+  const [performancePosts, setPerformancePosts] = useState<any[]>([]);
+
+  // ... existing modalLoading state ...
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -411,7 +418,7 @@ export default function UsersPage() {
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-theme-tertiary flex items-center justify-center text-theme-primary font-bold overflow-hidden border border-theme">
-                      {user.profile_picture ? <img src={`${API_URL}${user.profile_picture}`} alt="" className="w-full h-full object-cover" /> : user.username.charAt(0).toUpperCase()}
+                      {user.profile_picture ? <img src={getImageUrl(user.profile_picture)} alt="" className="w-full h-full object-cover" /> : user.username.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <p className="font-medium text-theme-primary">{user.username}</p>
@@ -451,6 +458,7 @@ export default function UsersPage() {
                     <button onClick={() => openNotesModal(user)} className="p-1.5 text-theme-muted hover:text-amber-500 hover:bg-amber-500/10 rounded-lg" title="Notes"><FileText className="w-4 h-4" /></button>
                     <button onClick={() => openActivityModal(user)} className="p-1.5 text-theme-muted hover:text-cyan-500 hover:bg-cyan-500/10 rounded-lg" title="Activity"><Activity className="w-4 h-4" /></button>
                     <button onClick={() => openSessionsModal(user)} className="p-1.5 text-theme-muted hover:text-purple-500 hover:bg-purple-500/10 rounded-lg" title="Sessions"><Monitor className="w-4 h-4" /></button>
+                    <Link href={`/dashboard/user-performance?id=${user.id}`} className="p-1.5 text-theme-muted hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg inline-flex items-center justify-center" title="Performance"><BarChart2 className="w-4 h-4" /></Link>
                     <button onClick={() => openPasswordReset(user)} className="p-1.5 text-theme-muted hover:text-amber-500 hover:bg-amber-500/10 rounded-lg" title="Reset Password"><Key className="w-4 h-4" /></button>
                     <button onClick={() => editUser(user)} className="p-1.5 text-theme-muted hover:text-blue-500 hover:bg-blue-500/10 rounded-lg" title="Edit"><Edit2 className="w-4 h-4" /></button>
                     <button onClick={() => toggleStatus(user.id, user.is_active)} className={`p-1.5 rounded-lg transition-colors ${user.is_active ? 'text-theme-muted hover:text-red-500 hover:bg-red-500/10' : 'text-theme-muted hover:text-green-500 hover:bg-green-500/10'}`} title={user.is_active ? "Block" : "Unblock"}>
@@ -642,6 +650,7 @@ export default function UsersPage() {
           </div>
         </div>
       )}
+
     </div>
   );
 }

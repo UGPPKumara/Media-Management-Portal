@@ -9,6 +9,7 @@ import {
   Users, FileText, HardDrive
 } from 'lucide-react';
 import { API_URL } from '@/config/api';
+import { getImageUrl } from '@/utils/imageUtils';
 
 export default function SettingsPage() {
   const { showToast } = useToast();
@@ -164,8 +165,8 @@ export default function SettingsPage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md'
-                : 'text-theme-secondary hover:bg-theme-tertiary'
+              ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md'
+              : 'text-theme-secondary hover:bg-theme-tertiary'
               }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -187,10 +188,11 @@ export default function SettingsPage() {
                 <div className="relative group w-32 h-32 bg-theme-tertiary rounded-2xl border-2 border-dashed border-theme flex items-center justify-center overflow-hidden hover:border-indigo-500 transition-colors">
                   {settings.logo_url ? (
                     <img
-                      src={settings.logo_url.startsWith('blob:') ? settings.logo_url : `${API_URL}${settings.logo_url}`}
+                      src={getImageUrl(settings.logo_url)}
                       alt="Company Logo"
                       className="w-full h-full object-contain p-2"
                     />
+
                   ) : (
                     <Building className="w-8 h-8 text-theme-muted" />
                   )}

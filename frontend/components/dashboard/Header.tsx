@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { useUser } from '@/context/UserContext';
+import { getImageUrl } from '@/utils/imageUtils';
 
 interface Notification {
   id: string;
@@ -306,7 +307,7 @@ export default function Header() {
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden shadow-lg">
               {user?.profile_picture ? (
-                <img src={`${API_URL}${user.profile_picture}`} alt="" className="w-full h-full object-cover" />
+                <img src={getImageUrl(user.profile_picture)} alt="" className="w-full h-full object-cover" />
               ) : (
                 user?.username?.charAt(0).toUpperCase() || 'U'
               )}
@@ -324,7 +325,7 @@ export default function Header() {
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-lg">
                     {user?.profile_picture ? (
-                      <img src={`${API_URL}${user.profile_picture}`} alt="" className="w-full h-full object-cover" />
+                      <img src={getImageUrl(user.profile_picture)} alt="" className="w-full h-full object-cover" />
                     ) : (
                       user?.username?.charAt(0).toUpperCase() || 'U'
                     )}

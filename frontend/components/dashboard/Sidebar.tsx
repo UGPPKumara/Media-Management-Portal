@@ -1,6 +1,7 @@
 'use client';
 
 import axios from 'axios';
+import { getImageUrl } from '@/utils/imageUtils';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -109,7 +110,7 @@ export default function Sidebar() {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold overflow-hidden shadow-lg shadow-indigo-500/30 shrink-0 border border-white/10">
             {company.logo_url ? (
               <img
-                src={`${API_URL}${company.logo_url}`}
+                src={getImageUrl(company.logo_url)}
                 alt="Logo"
                 className="w-full h-full object-cover"
               />
@@ -147,8 +148,8 @@ export default function Sidebar() {
                 {/* Unread Badge for Messages */}
                 {link.badge && link.badge > 0 && (
                   <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${isActive
-                      ? 'bg-white text-indigo-600'
-                      : 'bg-indigo-500 text-white animate-pulse'
+                    ? 'bg-white text-indigo-600'
+                    : 'bg-indigo-500 text-white animate-pulse'
                     }`}>
                     {link.badge > 99 ? '99+' : link.badge}
                   </span>

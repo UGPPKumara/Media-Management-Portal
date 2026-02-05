@@ -5,7 +5,7 @@ import axios from 'axios';
 import { API_URL } from '@/config/api';
 import {
   MessageSquare, Send, Plus, Search, Clock, User, Check, CheckCheck,
-  X, Loader2, ChevronLeft, MoreVertical, XCircle
+  X, Loader2, ChevronLeft, MoreVertical, XCircle, Trash2
 } from 'lucide-react';
 
 type Conversation = {
@@ -40,6 +40,9 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedConvoRef = useRef<string | null>(null);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConvoId, setDeleteConvoId] = useState<string | null>(null);
 
   // Keep ref updated with latest selectedConvo
   useEffect(() => {
@@ -169,6 +172,29 @@ export default function MessagesPage() {
     }
   };
 
+  const handleDeleteConversation = async () => {
+    if (!deleteConvoId) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/api/chat/conversations/${deleteConvoId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchConversations();
+      if (selectedConvo?.id === deleteConvoId) {
+        setSelectedConvo(null);
+      }
+      setShowDeleteModal(false);
+      setDeleteConvoId(null);
+    } catch (err) {
+      console.error('Failed to delete conversation', err);
+    }
+  };
+
+  const confirmDelete = (convoId: string) => {
+    setDeleteConvoId(convoId);
+    setShowDeleteModal(true);
+  };
+
   const filteredConversations = conversations.filter(c =>
     c.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.creator_id?.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -233,11 +259,10 @@ export default function MessagesPage() {
             </div>
           ) : (
             filteredConversations.map(convo => (
-              <button
+              <div
                 key={convo.id}
+                className={`w-full p-4 flex items-start gap-3 hover:bg-theme-tertiary transition-colors border-b border-theme cursor-pointer group relative ${selectedConvo?.id === convo.id ? 'bg-indigo-500/10 border-l-2 border-l-indigo-500' : ''}`}
                 onClick={() => setSelectedConvo(convo)}
-                className={`w-full p-4 flex items-start gap-3 hover:bg-theme-tertiary transition-colors border-b border-theme ${selectedConvo?.id === convo.id ? 'bg-indigo-500/10 border-l-2 border-l-indigo-500' : ''
-                  }`}
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold flex-shrink-0">
                   {convo.creator_id?.username?.[0]?.toUpperCase() || 'U'}
@@ -252,17 +277,27 @@ export default function MessagesPage() {
                   <p className="text-sm text-theme-secondary truncate">{convo.subject}</p>
                   <p className="text-xs text-theme-muted truncate mt-0.5">{convo.last_message}</p>
                 </div>
+
+                {/* Delete Button (Visible on Hover or if active) */}
+                {(['ADMIN', 'MANAGER'].includes(user?.role) || user?.id === convo.creator_id?.id) && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      confirmDelete(convo.id);
+                    }}
+                    className="absolute right-2 top-10 opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all"
+                    title="Delete conversation"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+
                 {convo.unread_count > 0 && (
-                  <span className="px-2 py-0.5 bg-indigo-500 text-white text-xs font-bold rounded-full">
+                  <span className="px-2 py-0.5 bg-indigo-500 text-white text-xs font-bold rounded-full ml-2">
                     {convo.unread_count}
                   </span>
                 )}
-                {convo.status === 'CLOSED' && (
-                  <span className="px-2 py-0.5 bg-slate-500/20 text-slate-400 text-xs rounded-full">
-                    Closed
-                  </span>
-                )}
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -289,15 +324,29 @@ export default function MessagesPage() {
                 </h2>
                 <p className="text-sm text-theme-muted">{selectedConvo.subject}</p>
               </div>
-              {['MANAGER', 'ADMIN'].includes(user?.role) && selectedConvo.status === 'OPEN' && (
-                <button
-                  onClick={() => handleCloseConversation(selectedConvo.id)}
-                  className="p-2 text-theme-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg"
-                  title="Close conversation"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
-              )}
+
+              {/* Header Actions */}
+              <div className="flex items-center gap-1">
+                {(['ADMIN', 'MANAGER'].includes(user?.role) || user?.id === selectedConvo.creator_id?.id) && (
+                  <button
+                    onClick={() => confirmDelete(selectedConvo.id)}
+                    className="p-2 text-theme-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg"
+                    title="Delete conversation"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+
+                {['MANAGER', 'ADMIN'].includes(user?.role) && selectedConvo.status === 'OPEN' && (
+                  <button
+                    onClick={() => handleCloseConversation(selectedConvo.id)}
+                    className="p-2 text-theme-muted hover:text-orange-500 hover:bg-orange-500/10 rounded-lg"
+                    title="Close conversation"
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Messages */}
@@ -432,6 +481,37 @@ export default function MessagesPage() {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-theme-card rounded-2xl shadow-2xl w-full max-w-sm border border-theme transform transition-all scale-100">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-theme-primary mb-2">Delete Conversation?</h3>
+              <p className="text-theme-secondary text-sm">
+                Are you sure you want to delete this conversation? This action cannot be undone.
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-theme-tertiary border-t border-theme rounded-b-2xl flex justify-center gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-6 py-2 text-sm font-medium text-theme-secondary hover:text-theme-primary transition bg-theme-card border border-theme rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConversation}
+                className="px-6 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-500/20"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

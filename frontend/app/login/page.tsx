@@ -106,6 +106,32 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-slate-700/50">
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+            <h3 className="text-xs font-semibold text-indigo-400 mb-3 uppercase tracking-wider text-center">Demo Credentials</h3>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm text-slate-300 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700/30">
+                <span className="font-medium text-emerald-400">Admin</span>
+                <div className="font-mono text-xs text-slate-400 tracking-wide">
+                  admin / admin123
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-sm text-slate-300 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700/30">
+                <span className="font-medium text-blue-400">Manager</span>
+                <div className="font-mono text-xs text-slate-400 tracking-wide">
+                  manager / manager123
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-sm text-slate-300 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700/30">
+                <span className="font-medium text-purple-400">Creator</span>
+                <div className="font-mono text-xs text-slate-400 tracking-wide">
+                  creator / creator123
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

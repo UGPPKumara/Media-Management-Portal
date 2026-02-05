@@ -4,6 +4,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Download, CheckCircle, XCircle, Share2, AlertCircle, Copy } from 'lucide-react';
 import { API_URL } from '@/config/api';
+import { getImageUrl } from '@/utils/imageUtils';
 
 interface Post {
   id: number;
@@ -75,11 +76,15 @@ export default function PostCard({ post, userRole, onStatusChange }: PostCardPro
       </div>
 
       <div className="p-4">
+        import {getImageUrl} from '@/utils/imageUtils';
+
+        // ... inside component
         {post.media_type === 'VIDEO' ? (
-          <video src={`${API_URL}${post.media_path}`} controls className="w-full max-h-96 object-contain bg-black" />
+          <video src={getImageUrl(post.media_path)} controls className="w-full max-h-96 object-contain bg-black" />
         ) : (
-          <img src={`${API_URL}${post.media_path}`} alt={post.title} className="w-full max-h-96 object-contain" />
+          <img src={getImageUrl(post.media_path)} alt={post.title} className="w-full max-h-96 object-contain" />
         )}
+
         <p className="mt-4 text-gray-700 whitespace-pre-wrap">{post.content}</p>
 
         {post.status === 'REJECTED' && post.rejection_reason && (

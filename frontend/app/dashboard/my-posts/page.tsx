@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { API_URL } from '@/config/api';
+import { getImageUrl } from '@/utils/imageUtils';
 import { useToast } from '@/context/ToastContext';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -339,10 +340,11 @@ export default function MyPostsPage() {
                       <div className="w-16 h-12 rounded-lg overflow-hidden bg-theme-tertiary border border-theme">
                         {post.media_path ? (
                           post.media_type?.startsWith('video') ? (
-                            <video src={`${API_URL}${post.media_path}`} className="w-full h-full object-cover" />
+                            <video src={getImageUrl(post.media_path)} className="w-full h-full object-cover" />
                           ) : (
-                            <img src={`${API_URL}${post.media_path}`} alt="" className="w-full h-full object-cover" />
+                            <img src={getImageUrl(post.media_path)} alt="" className="w-full h-full object-cover" />
                           )
+
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-theme-muted">
                             <ImageIcon className="w-5 h-5" />
@@ -431,9 +433,9 @@ export default function MyPostsPage() {
               {viewPost.media_path && (
                 <div className="rounded-xl overflow-hidden bg-black">
                   {viewPost.media_type?.startsWith('video') ? (
-                    <video src={`${API_URL}${viewPost.media_path}`} controls className="w-full max-h-80 object-contain" />
+                    <video src={getImageUrl(viewPost.media_path)} controls className="w-full max-h-80 object-contain" />
                   ) : (
-                    <img src={`${API_URL}${viewPost.media_path}`} alt="" className="w-full max-h-80 object-contain" />
+                    <img src={getImageUrl(viewPost.media_path)} alt="" className="w-full max-h-80 object-contain" />
                   )}
                 </div>
               )}
@@ -504,9 +506,9 @@ export default function MyPostsPage() {
                       <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                     ) : editPost.media_path ? (
                       editPost.media_type?.startsWith('video') ? (
-                        <video src={`${API_URL}${editPost.media_path}`} className="w-full h-full object-cover" />
+                        <video src={getImageUrl(editPost.media_path)} className="w-full h-full object-cover" />
                       ) : (
-                        <img src={`${API_URL}${editPost.media_path}`} alt="" className="w-full h-full object-cover" />
+                        <img src={getImageUrl(editPost.media_path)} alt="" className="w-full h-full object-cover" />
                       )
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-theme-muted">
