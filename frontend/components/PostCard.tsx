@@ -76,9 +76,6 @@ export default function PostCard({ post, userRole, onStatusChange }: PostCardPro
       </div>
 
       <div className="p-4">
-        import {getImageUrl} from '@/utils/imageUtils';
-
-        // ... inside component
         {post.media_type === 'VIDEO' ? (
           <video src={getImageUrl(post.media_path)} controls className="w-full max-h-96 object-contain bg-black" />
         ) : (

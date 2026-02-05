@@ -7,7 +7,9 @@ import Link from 'next/link';
 import { Upload, FileText, Image as ImageIcon, X, Loader2, Save, Send, AlertTriangle, Eye, Edit2 } from 'lucide-react';
 import { API_URL } from '@/config/api';
 
-export default function CreatePostPage() {
+import { Suspense } from 'react';
+
+function CreatePostContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
 
@@ -202,8 +204,8 @@ export default function CreatePostPage() {
       {/* Status Badge for Edit Mode */}
       {isEditMode && postStatus && (
         <div className={`mb-6 p-4 rounded-xl border ${postStatus === 'REJECTED'
-            ? 'bg-red-500/10 border-red-500/20'
-            : 'bg-slate-500/10 border-slate-500/20'
+          ? 'bg-red-500/10 border-red-500/20'
+          : 'bg-slate-500/10 border-slate-500/20'
           }`}>
           <p className={`text-sm font-medium ${postStatus === 'REJECTED' ? 'text-red-400' : 'text-slate-400'
             }`}>
@@ -395,5 +397,13 @@ export default function CreatePostPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CreatePostPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreatePostContent />
+    </Suspense>
   );
 }

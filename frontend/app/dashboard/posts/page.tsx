@@ -22,7 +22,9 @@ interface Post {
   created_at: string;
 }
 
-export default function PostsPage() {
+import { Suspense } from 'react';
+
+function PostsContent() {
   const { showToast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -762,5 +764,13 @@ export default function PostsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PostsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PostsContent />
+    </Suspense>
   );
 }

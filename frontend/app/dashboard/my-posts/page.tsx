@@ -24,7 +24,9 @@ type Post = {
   updated_at: string;
 };
 
-export default function MyPostsPage() {
+import { Suspense } from 'react';
+
+function MyPostsContent() {
   const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -597,5 +599,13 @@ export default function MyPostsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MyPostsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MyPostsContent />
+    </Suspense>
   );
 }
