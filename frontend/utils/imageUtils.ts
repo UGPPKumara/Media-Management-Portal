@@ -12,7 +12,8 @@ export const getImageUrl = (path: string | null | undefined): string => {
 
   const cleanPath = path.trim();
 
-  if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://') || cleanPath.startsWith('blob:')) {
+  // Check for absolute URLs (http, https, blob, data), allowing for common typos like missing colon
+  if (/^(http|https|blob|data)(:|;|\/\/)/i.test(cleanPath) || cleanPath.startsWith('//')) {
     return cleanPath;
   }
 
