@@ -9,8 +9,16 @@ import { API_URL } from '@/config/api';
  */
 export const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return '';
-  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) {
-    return path;
+
+  const cleanPath = path.trim();
+
+  if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://') || cleanPath.startsWith('blob:')) {
+    return cleanPath;
   }
-  return `${API_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+
+  // Ensure we don't end up with double slashes or missing slashes
+  const baseUrl = API_URL.replace(/\/+$/, '');
+  const pathPart = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+
+  return `${baseUrl}${pathPart}`;
 };
